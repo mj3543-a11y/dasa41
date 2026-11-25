@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pixel Studio Pro (GIF & Background Fix)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <title>픽셀 스튜디오</title>
+    <script src="vendor/gif.js"></script>
     <style>
         :root {
             --bg-color: #1e1e24; --panel-color: #2b333e; --border-color: #3b4554;
@@ -35,6 +35,12 @@
         }
         .top-bar h1 { margin: 0; font-size: 1.2rem; color: #fff; letter-spacing: 1px; }
         .top-bar-actions { display: flex; gap: 10px; align-items: center; }
+        @media (max-width: 700px) {
+            .top-bar-actions { flex-wrap: wrap; gap: 6px; width: 100%; }
+            .top-bar-actions > div { display: none; }
+            .top-bar-actions button { padding: 7px 9px; font-size: 0.8rem; }
+            #autosaveStatus { width: 100%; order: -1; }
+        }
 
         .main-layout {
             display: flex; gap: 15px; width: 100%; max-width: 1100px;
@@ -61,6 +67,7 @@
         .tool-btn .ti { font-size: 1.1rem; line-height: 1; }
         .tool-btn .tl { font-size: 0.64rem; overflow: hidden; max-width: 100%; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
         .tool-btn.active .tl { color: var(--tool-active); }
+        .tool-hint { font-size: 0.82rem; color: #fde68a; background: rgba(245, 158, 11, 0.12); border-radius: 6px; padding: 7px 10px; line-height: 1.4; }
         .opt-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; background: var(--layer-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
         .opt-toggle input { width: 18px; height: 18px; }
         .tool-btn.active { border-color: var(--tool-active); background: rgba(245, 158, 11, 0.15); box-shadow: inset 0 0 0 1px var(--tool-active); }
@@ -177,12 +184,12 @@
 <body>
 
     <div class="top-bar">
-        <h1>👾 Pixel Studio Pro</h1>
+        <h1>👾 픽셀 스튜디오</h1>
         <div class="top-bar-actions">
             <button class="work-btn" onclick="openWorks()" title="내 작품함 열기">📁 내 작품함 · <b id="workName" style="color: var(--warning-color);"></b></button>
             <span id="autosaveStatus" title="그림이 이 태블릿에 자동으로 저장돼요" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap;">자동저장 준비 중…</span>
-            <button onclick="undo()" title="실행 취소">↩️</button>
-            <button onclick="redo()" title="다시 실행">↪️</button>
+            <button onclick="undo()" title="되돌리기 (Ctrl+Z)">↩️ 되돌리기</button>
+            <button onclick="redo()" title="다시 하기 (Ctrl+Y)">↪️ 다시</button>
             <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 5px;"></div>
             <button onclick="document.getElementById('fileInput').click()" title="저장해 둔 .json 파일을 새 작품으로 불러와요">📂 파일 열기</button>
             <input type="file" id="fileInput" accept=".json" onchange="loadProject(this)" hidden>
@@ -194,7 +201,7 @@
         
         <aside class="panel left-panel">
             <div class="panel-section">
-                <div class="panel-title">Tools</div>
+                <div class="panel-title">도구</div>
                 <div class="tools-grid">
                     <button class="tool-btn active" id="btn-pen" onclick="setTool('pen')" title="펜"><span class="ti">✏️</span><span class="tl">펜</span></button>
                     <button class="tool-btn" id="btn-eraser" onclick="setTool('eraser')" title="지우개"><span class="ti">🧽</span><span class="tl">지우개</span></button>
@@ -212,6 +219,7 @@
                     <input type="range" id="brushSizeInput" min="1" max="20" value="1" style="width: 120px; padding: 0;">
                 </div>
 
+                <div id="toolHint" class="tool-hint"></div>
                 <label id="mirrorOption" class="opt-toggle" title="한쪽에 그리면 반대쪽에도 똑같이 그려져요"><input type="checkbox" id="mirrorToggle"> 🪞 좌우 대칭으로 그리기</label>
                 <label id="fillOption" class="opt-toggle" style="display:none;" title="네모·동그라미·세모의 속까지 칠해요"><input type="checkbox" id="fillToggle"> ■ 도형 속까지 채우기</label>
 
@@ -224,7 +232,7 @@
             <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%;">
 
             <div class="panel-section">
-                <div class="panel-title">Colors</div>
+                <div class="panel-title">색깔</div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 5px;">
                     <input type="color" id="colorPicker" value="#000000" style="width: 40px; height: 40px; padding: 0; border: none; border-radius: 4px; cursor: pointer;">
                     <button onclick="addColorToPalette()" class="primary" style="flex: 1;">+ 색상 추가</button>
@@ -235,11 +243,11 @@
             <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%;">
 
             <div class="panel-section">
-                <div class="panel-title">Settings</div>
+                <div class="panel-title">설정</div>
                 <div class="settings-row">
                     <label>해상도</label>
                     <div style="display:flex; align-items:center; gap:4px;">
-                        <input type="number" id="sizeSelect" min="2" max="512" step="1" value="32" title="가로·세로 칸 수 (2~512)" style="width:64px; text-align:center;">
+                        <input type="number" id="sizeSelect" min="2" max="512" step="1" value="16" title="가로·세로 칸 수 (2~512)" style="width:64px; text-align:center;">
                         <span style="color: var(--text-muted);">칸</span>
                         <button id="sizeApplyBtn" class="primary" style="padding:6px 10px;">적용</button>
                     </div>
@@ -255,9 +263,9 @@
                 <div style="font-size:0.75rem; color: var(--text-muted);">숫자를 적고 [적용] 또는 Enter (2~512)</div>
                 <div class="settings-row" style="margin-top: 5px;">
                     <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="gridToggle" checked> 격자</label>
-                    <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="onionToggle" checked> 어니언 스킨</label>
+                    <label title="앞 프레임 그림을 흐리게 보여 줘요" style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="onionToggle" checked> 어니언 스킨</label>
                 </div>
-                <button onclick="clearCurrentFrame()" class="danger" style="margin-top: 8px;">🗑 현재 캔버스 비우기</button>
+                <button onclick="clearCurrentFrame()" class="danger" style="margin-top: 8px;">🗑 이 프레임 그림 모두 지우기</button>
             </div>
         </aside>
 
@@ -289,7 +297,7 @@
 
         <aside class="panel right-panel">
             <div class="panel-section">
-                <div class="panel-title">Layers</div>
+                <div class="panel-title">레이어</div>
                 <div class="layer-list" id="layerListUI"></div>
                 <div class="flex-row">
                     <button onclick="addLayer()" class="success" title="빈 레이어를 새로 만들어요">➕ 추가</button>
@@ -305,14 +313,14 @@
             <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%;">
 
             <div class="panel-section">
-                <div class="panel-title">Animation</div>
+                <div class="panel-title">애니메이션</div>
                 <div style="display:flex; justify-content:center;">
                     <canvas id="previewCanvas" class="preview-box" width="128" height="128"></canvas>
                 </div>
                 
                 <div class="settings-row" style="margin-top: 5px;">
                     <label>재생 속도</label>
-                    <input type="number" id="fpsRange" min="1" max="24" value="8" style="width: 60px; text-align: center;">
+                    <input type="number" id="fpsRange" min="1" max="24" value="8" title="1초에 몇 장을 보여 줄지 (1~24)" onchange="this.value=Math.max(1,Math.min(24,parseInt(this.value)||8))" style="width: 60px; text-align: center;">
                 </div>
                 <button id="playBtn" onclick="togglePlay()" class="primary">▶ 재생 시작</button>
 
@@ -377,7 +385,7 @@
             const MAX_CANVAS = 512,
                 MIN_GRID = 2,
                 MAX_GRID = 512;
-            let gridSize = 32,
+            let gridSize = 16,
                 pixelSize = canvasWidth / gridSize,
                 frames = [],
                 currentFrameIndex = 0,
@@ -468,7 +476,7 @@
                 }), document.getElementById("sizeApplyBtn").addEventListener("click", updateGridSize), document.getElementById("sizeSelect").addEventListener("keydown", e => {
                     "Enter" === e.key && (e.preventDefault(), updateGridSize(e))
                 }), document.getElementById("gridToggle").addEventListener("change", drawGrid), document.getElementById("onionToggle").addEventListener("change", drawOnionSkin), document.getElementById("fpsRange").addEventListener("input", e => {
-                    fps = e.target.value, scheduleAutosave()
+                    fps = Math.max(1, Math.min(24, parseInt(e.target.value) || 8)), scheduleAutosave()
                 }), document.getElementById("colorPicker").addEventListener("input", e => setColor(e.target.value)), document.getElementById("brushSizeInput").addEventListener("input", e => {
                     currentBrushSize = parseInt(e.target.value), document.getElementById("brushSizeDisp").innerText = currentBrushSize
                 }), document.getElementById("mirrorToggle").addEventListener("change", e => {
@@ -851,7 +859,8 @@
             }
 
             function mergeDownLayer() {
-                if (stampSelection(), 0 === currentLayerIndex) return;
+                if (stampSelection(), 0 === currentLayerIndex) return void showToast("맨 아래 레이어는 합칠 레이어가 없어요");
+                if (!confirm(`레이어 ${currentLayerIndex+1}을(를) 바로 아래 레이어 ${currentLayerIndex}과(와) 합칠까요?\n(합치면 다시 나눌 수 없어요)`)) return;
                 saveCurrentLayerToData();
                 const e = frames[currentFrameIndex][currentLayerIndex - 1],
                     t = frames[currentFrameIndex][currentLayerIndex],
@@ -943,11 +952,26 @@
                 w && (w.style.cursor = "hand" === e ? "grab" : "picker" === e ? "copy" : "crosshair");
                 document.getElementById("fillOption").style.display = ["rect", "circle", "triangle"].includes(e) ? "flex" : "none";
                 document.getElementById("mirrorOption").style.display = ["select", "hand", "picker"].includes(e) ? "none" : "flex";
+                document.getElementById("toolHint").textContent = TOOL_HINT[e] || "";
                 "select" === currentTool && "select" !== e && stampSelection(), currentTool = e, document.querySelectorAll(".tool-btn").forEach(e => e.classList.remove("active")), (document.getElementById("btn-" + e) || {classList:{add(){}}}).classList.add("active"), document.getElementById("zoomHandBtn").classList.toggle("on", "hand" === e), document.getElementById("selectOptions").style.display = "select" === e ? "flex" : "none", document.getElementById("brushOptions").style.display = ["bucket", "select", "picker", "hand"].includes(e) ? "none" : "flex"
             }
 
+            const TOOL_HINT = {
+                pen: "✏️ 칸을 누르거나 끌어서 칠해요",
+                eraser: "🧽 칠한 칸을 누르거나 끌어서 지워요",
+                bucket: "🪣 막힌 곳 안쪽을 누르면 한 번에 칠해요",
+                picker: "💧 그림 속 색을 누르면 그 색이 골라져요",
+                line: "➖ 누른 채로 끌었다가 손을 떼면 선이 그려져요",
+                rect: "⬜ 누른 채로 끌었다가 손을 떼면 네모가 그려져요",
+                circle: "⭕ 누른 채로 끌었다가 손을 떼면 동그라미가 그려져요",
+                triangle: "△ 누른 채로 끌었다가 손을 떼면 세모가 그려져요",
+                select: "🖱️ ① 끌어서 네모로 고르고 ② 네모 안을 끌어 옮겨요. 다른 도구를 누르면 그 자리에 놓여요",
+                hand: "✋ 크게 본 그림판을 끌어서 다른 곳을 봐요"
+            };
+
             function setColor(e) {
-                currentColor = e, document.getElementById("colorPicker").value = e
+                currentColor = e, document.getElementById("colorPicker").value = e;
+                document.querySelectorAll("#palette .color-swatch").forEach(n => n.classList.toggle("selected", n.dataset.c === e))
             }
 
             function addColorToPalette() {
@@ -960,7 +984,7 @@
                 const e = document.getElementById("palette");
                 e.innerHTML = "", savedColors.forEach(t => {
                     const n = document.createElement("div");
-                    n.className = "color-swatch", n.style.backgroundColor = t, t === currentColor && n.classList.add("selected"), n.onclick = () => {
+                    n.className = "color-swatch", n.dataset.c = t, n.style.backgroundColor = t, t === currentColor && n.classList.add("selected"), n.onclick = () => {
                         setColor(t), renderPalette()
                     }, e.appendChild(n)
                 })
@@ -1106,13 +1130,7 @@
                 frames = t, history = n, currentFrameIndex = 0, currentLayerIndex = frames[0].length - 1, drawGrid(), renderLayersUI(), document.getElementById("frameIndicator").innerText = `1 / ${frames.length}`, drawOnionSkin(), silent || alert("프로젝트 로드 완료!")
             }
             async function getGifWorkerUrl() {
-                try {
-                    const e = await fetch("https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js"),
-                        t = await e.blob();
-                    return URL.createObjectURL(t)
-                } catch (e) {
-                    return "https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js"
-                }
+                return "vendor/gif.worker.js"
             }
             window.exportGIF = async function() {
                 stampSelection();
