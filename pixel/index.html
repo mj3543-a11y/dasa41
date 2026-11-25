@@ -111,7 +111,6 @@
         .zoom-controls button { min-width: 44px; font-size: 1rem; }
         .zoom-controls button.on { background: rgba(245, 158, 11, 0.25); box-shadow: inset 0 0 0 2px var(--tool-active); }
         #zoomDisp { min-width: 56px; text-align: center; font-weight: bold; }
-        #onionNote { display: none; font-size: 0.8rem; color: #93c5fd; text-align: center; }
         #zoomHint { display: none; font-size: 0.78rem; color: var(--warning-color); text-align: center; }
 
         .work-btn { background: var(--layer-bg); border: 1px solid var(--border-color); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -264,7 +263,6 @@
                 <div style="font-size:0.75rem; color: var(--text-muted);">숫자를 적고 [적용] 또는 Enter (2~512)</div>
                 <div class="settings-row" style="margin-top: 5px;">
                     <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="gridToggle" checked> 격자</label>
-                    <label title="앞 프레임 그림을 흐리게 보여 줘요" style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="onionToggle" checked> 어니언 스킨</label>
                 </div>
                 <button onclick="clearCurrentFrame()" class="danger" style="margin-top: 8px;">🗑 이 프레임 그림 모두 지우기</button>
             </div>
@@ -287,7 +285,6 @@
                 <button onclick="zoomReset()" title="원래 크기로">↺ 원래대로</button>
                 <button id="zoomHandBtn" onclick="setTool('hand')" title="확대한 화면을 손가락으로 끌어서 옮겨요">✋ 화면 이동</button>
             </div>
-            <div id="onionNote">👻 파랗게 비치는 건 앞 프레임 그림이에요 (어니언 스킨)</div>
             <div id="zoomHint">확대 중이에요. 다른 곳을 보려면 ✋ 화면 이동 도구로 끌어 보세요</div>
 
             <div class="frame-controls">
@@ -477,7 +474,7 @@
                     if ((e.ctrlKey || e.metaKey) && ("c" === e.key || "C" === e.key ? "select" === currentTool && selectBox && copySelection() : ("v" === e.key || "V" === e.key) && pasteSelection())) return
                 }), document.getElementById("sizeApplyBtn").addEventListener("click", updateGridSize), document.getElementById("sizeSelect").addEventListener("keydown", e => {
                     "Enter" === e.key && (e.preventDefault(), updateGridSize(e))
-                }), document.getElementById("gridToggle").addEventListener("change", drawGrid), document.getElementById("onionToggle").addEventListener("change", drawOnionSkin), document.getElementById("fpsRange").addEventListener("input", e => {
+                }), document.getElementById("gridToggle").addEventListener("change", drawGrid), document.getElementById("fpsRange").addEventListener("input", e => {
                     fps = Math.max(1, Math.min(24, parseInt(e.target.value) || 8)), scheduleAutosave()
                 }), document.getElementById("colorPicker").addEventListener("input", e => setColor(e.target.value)), document.getElementById("brushSizeInput").addEventListener("input", e => {
                     currentBrushSize = parseInt(e.target.value), document.getElementById("brushSizeDisp").innerText = currentBrushSize
@@ -922,21 +919,8 @@
                 currentFrameIndex < frames.length - 1 && loadFrame(currentFrameIndex + 1)
             }
 
-            function drawOnionSkin() {
-                const note = document.getElementById("onionNote");
-                if (onionCtx.clearRect(0, 0, canvasWidth, canvasWidth), note.style.display = "none", !document.getElementById("onionToggle").checked || 0 === currentFrameIndex) return;
-                frames[currentFrameIndex - 1].forEach(e => {
-                    const t = document.createElement("canvas");
-                    t.width = canvasWidth, t.height = canvasWidth, t.getContext("2d").putImageData(e, 0, 0), onionCtx.drawImage(t, 0, 0)
-                });
-                // 앞 프레임 그림은 파란빛으로 칠해 지금 그림과 헷갈리지 않게
-                onionCtx.save(), onionCtx.globalCompositeOperation = "source-atop", onionCtx.fillStyle = "#3b82f6", onionCtx.globalAlpha = 0.65, onionCtx.fillRect(0, 0, canvasWidth, canvasWidth), onionCtx.restore();
-                frames[currentFrameIndex - 1].some(e => {
-                    for (let i = 3; i < e.data.length; i += 4)
-                        if (e.data[i]) return !0;
-                    return !1
-                }) && (note.style.display = "block")
-            }
+            // 어니언 스킨은 학생들이 헷갈려서 뺐어요(아무것도 그리지 않아요)
+            function drawOnionSkin() {}
 
             function startPreview() {
                 setInterval(() => {
@@ -1155,21 +1139,30 @@
                         a = document.getElementById("exportBgColor").value,
                         r = {
                             workers: 2,
-                            quality: 10,
-                            width: canvasWidth,
-                            height: canvasWidth,
+                            quality: 1,
+                            width: gridSize,
+                            height: gridSize,
                             workerScript: t
                         };
-                    n && (r.transparent = "#FF00FF");
+                    n && (r.transparent = 0xFF00FF);
+                    // 원래 크기 프레임들 + 쓰인 색을 모두 모아 정확한 색표로(256색 이하일 때)
+                    const fr = frames.map((_, e) => realFrame(e, n ? "#FF00FF" : a)),
+                        cols = new Set;
+                    n && cols.add(0xFF00FF);
+                    for (const c of fr) {
+                        const d = c.getContext("2d").getImageData(0, 0, gridSize, gridSize).data;
+                        for (let i = 0; i < d.length && cols.size <= 256; i += 4) cols.add(d[i] << 16 | d[i + 1] << 8 | d[i + 2])
+                    }
+                    if (cols.size <= 256) {
+                        const pal = [];
+                        for (const v of cols) pal.push(v >> 16 & 255, v >> 8 & 255, 255 & v);
+                        for (; pal.length < 768;) pal.push(pal[pal.length - 3], pal[pal.length - 2], pal[pal.length - 1]);
+                        r.globalPalette = pal
+                    }
                     const o = new GIF(r);
                     for (let e = 0; e < frames.length; e++) {
-                        const t = document.createElement("canvas");
-                        t.width = canvasWidth, t.height = canvasWidth;
-                        const r = t.getContext("2d");
-                        n ? (r.fillStyle = "#FF00FF", r.fillRect(0, 0, canvasWidth, canvasWidth)) : (r.fillStyle = a, r.fillRect(0, 0, canvasWidth, canvasWidth)), frames[e].forEach(e => {
-                            const n = document.createElement("canvas");
-                            n.width = canvasWidth, n.height = canvasWidth, n.getContext("2d").putImageData(e, 0, 0), r.imageSmoothingEnabled = !1, r.drawImage(n, 0, 0, canvasWidth, canvasWidth)
-                        }), o.addFrame(t, {
+                        const t = fr[e];
+                        o.addFrame(t, {
                             copy: !0,
                             delay: 1e3 / fps
                         })
@@ -1470,16 +1463,34 @@
             };
 
             /* ----- PNG 그림 저장 (지금 프레임) ----- */
+            // 원래 크기(칸 하나 = 1픽셀)로 합친 그림
+            function realFrame(idx, bg) {
+                const big = composeFrame(idx, canvasWidth, bg),
+                    bd = big.getContext("2d").getImageData(0, 0, canvasWidth, canvasWidth).data,
+                    c = document.createElement("canvas");
+                c.width = c.height = gridSize;
+                const x = c.getContext("2d"),
+                    out = x.createImageData(gridSize, gridSize),
+                    half = Math.floor(pixelSize / 2);
+                for (let gy = 0; gy < gridSize; gy++)
+                    for (let gx = 0; gx < gridSize; gx++) {
+                        const si = 4 * ((gy * pixelSize + half) * canvasWidth + gx * pixelSize + half),
+                            di = 4 * (gy * gridSize + gx);
+                        out.data[di] = bd[si], out.data[di + 1] = bd[si + 1], out.data[di + 2] = bd[si + 2], out.data[di + 3] = bd[si + 3]
+                    }
+                return x.putImageData(out, 0, 0), c
+            }
+
             window.exportPNG = function() {
                 stampSelection(), saveCurrentLayerToData();
                 let e = prompt("저장할 그림 파일 이름을 적어 주세요 (확장자 제외):", currentWork ? currentWork.name : "pixel_art");
                 if (null === e) return;
                 e = (e.trim() || "pixel_art").replace(/[\\/:*?"<>|]/g, "_"), e.endsWith(".png") || (e += ".png");
                 const bg = document.getElementById("bgTransparent").checked ? null : document.getElementById("exportBgColor").value;
-                composeFrame(currentFrameIndex, canvasWidth, bg).toBlob(b => {
+                realFrame(currentFrameIndex, bg).toBlob(b => {
                     const u = URL.createObjectURL(b),
                         a = document.createElement("a");
-                    a.href = u, a.download = e, document.body.appendChild(a), a.click(), document.body.removeChild(a), setTimeout(() => URL.revokeObjectURL(u), 1e3), showToast("🖼️ PNG 그림을 저장했어요")
+                    a.href = u, a.download = e, document.body.appendChild(a), a.click(), document.body.removeChild(a), setTimeout(() => URL.revokeObjectURL(u), 1e3), showToast(`🖼️ PNG 그림을 저장했어요 (${gridSize}×${gridSize})`)
                 }, "image/png")
             };
 
