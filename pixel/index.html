@@ -47,11 +47,11 @@
             gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .left-panel { width: 240px; flex-shrink: 0; }
+        .left-panel { width: 256px; flex-shrink: 0; }
         .panel-section { display: flex; flex-direction: column; gap: 8px; }
         .panel-title { font-size: 0.75rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
 
-        .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .tools-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
         .tool-btn {
             height: 54px; flex-direction: column; gap: 2px; padding: 2px; background: var(--layer-bg); border: 1px solid var(--border-color);
             border-radius: 6px; color: white; cursor: pointer; font-size: 1rem;
@@ -59,7 +59,7 @@
         }
         .tool-btn:hover { background: var(--border-color); }
         .tool-btn .ti { font-size: 1.1rem; line-height: 1; }
-        .tool-btn .tl { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+        .tool-btn .tl { font-size: 0.64rem; overflow: hidden; max-width: 100%; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
         .tool-btn.active .tl { color: var(--tool-active); }
         .opt-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; background: var(--layer-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
         .opt-toggle input { width: 18px; height: 18px; }
