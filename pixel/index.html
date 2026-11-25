@@ -102,6 +102,7 @@
 
         .zoom-controls { width: 100%; display: flex; gap: 6px; align-items: center; justify-content: center; }
         .zoom-controls button { min-width: 44px; font-size: 1rem; }
+        .zoom-controls button.on { background: rgba(245, 158, 11, 0.25); box-shadow: inset 0 0 0 2px var(--tool-active); }
         #zoomDisp { min-width: 56px; text-align: center; font-weight: bold; }
         #zoomHint { display: none; font-size: 0.78rem; color: var(--warning-color); text-align: center; }
 
@@ -163,7 +164,7 @@
         .size-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
         .size-presets button { padding: 4px 0; font-size: 0.75rem; }
         .flex-row { display: flex; gap: 8px; width: 100%; }
-        .flex-row > button { flex: 1; }
+        .flex-row > button { flex: 1; white-space: nowrap; padding-left: 6px; padding-right: 6px; }
 
         @media (max-width: 860px) {
             .left-panel { width: 100%; flex-direction: row; flex-wrap: wrap; }
@@ -204,7 +205,6 @@
                     <button class="tool-btn" id="btn-circle" onclick="setTool('circle')" title="동그라미"><span class="ti">⭕</span><span class="tl">동그라미</span></button>
                     <button class="tool-btn" id="btn-triangle" onclick="setTool('triangle')" title="세모"><span class="ti">△</span><span class="tl">세모</span></button>
                     <button class="tool-btn" id="btn-select" onclick="setTool('select')" title="선택·이동"><span class="ti">🖱️</span><span class="tl">선택·이동</span></button>
-                    <button class="tool-btn" id="btn-hand" onclick="setTool('hand')" title="화면 이동"><span class="ti">✋</span><span class="tl">화면 이동</span></button>
                 </div>
                 
                 <div id="brushOptions" class="settings-row" style="margin-top: 5px;">
@@ -276,7 +276,7 @@
                 <span id="zoomDisp">100%</span>
                 <button onclick="zoomIn()" title="크게 보기">🔍＋</button>
                 <button onclick="zoomReset()" title="원래 크기로">↺ 원래대로</button>
-                <button onclick="setTool('hand')" title="확대한 화면을 손가락으로 끌어서 옮겨요">✋ 화면 이동</button>
+                <button id="zoomHandBtn" onclick="setTool('hand')" title="확대한 화면을 손가락으로 끌어서 옮겨요">✋ 화면 이동</button>
             </div>
             <div id="zoomHint">확대 중이에요. 다른 곳을 보려면 ✋ 화면 이동 도구로 끌어 보세요</div>
 
@@ -292,8 +292,9 @@
                 <div class="panel-title">Layers</div>
                 <div class="layer-list" id="layerListUI"></div>
                 <div class="flex-row">
-                    <button onclick="addLayer()" class="success">➕ 레이어 추가</button>
-                    <button onclick="mergeDownLayer()">👇 병합</button>
+                    <button onclick="addLayer()" class="success" title="빈 레이어를 새로 만들어요">➕ 추가</button>
+                    <button onclick="duplicateLayer()" title="지금 고른 레이어를 똑같이 하나 더 만들어요">📑 복제</button>
+                    <button onclick="mergeDownLayer()" title="지금 레이어를 아래 레이어와 합쳐요">👇 병합</button>
                 </div>
                 <div class="flex-row" style="margin-top: 5px;">
                     <button onclick="document.getElementById('imageLayerInput').click()" class="warning">🖼️ 이미지 레이어 삽입</button>
@@ -805,6 +806,17 @@
                 }), currentLayerIndex = frames[currentFrameIndex].length - 1, renderLayersUI()
             }
 
+            // 지금 고른 레이어를 똑같이 복사해 바로 위에 넣어요
+            function duplicateLayer() {
+                stampSelection(), saveCurrentLayerToData();
+                const src = frames[currentFrameIndex][currentLayerIndex],
+                    copy = new ImageData(new Uint8ClampedArray(src.data), src.width, src.height);
+                frames[currentFrameIndex].splice(currentLayerIndex + 1, 0, copy), history[currentFrameIndex].splice(currentLayerIndex + 1, 0, {
+                    undoStack: [],
+                    redoStack: []
+                }), currentLayerIndex++, renderLayersUI(), showToast("📑 레이어를 복제했어요")
+            }
+
             function deleteLayer(e) {
                 if (stampSelection(), frames[currentFrameIndex].length <= 1) return void alert("최소 1개의 레이어는 유지되어야 합니다.");
                 if (!confirm(`레이어 ${e+1}을(를) 삭제하시겠습니까?`)) return;
@@ -931,7 +943,7 @@
                 w && (w.style.cursor = "hand" === e ? "grab" : "picker" === e ? "copy" : "crosshair");
                 document.getElementById("fillOption").style.display = ["rect", "circle", "triangle"].includes(e) ? "flex" : "none";
                 document.getElementById("mirrorOption").style.display = ["select", "hand", "picker"].includes(e) ? "none" : "flex";
-                "select" === currentTool && "select" !== e && stampSelection(), currentTool = e, document.querySelectorAll(".tool-btn").forEach(e => e.classList.remove("active")), document.getElementById("btn-" + e).classList.add("active"), document.getElementById("selectOptions").style.display = "select" === e ? "flex" : "none", document.getElementById("brushOptions").style.display = ["bucket", "select", "picker", "hand"].includes(e) ? "none" : "flex"
+                "select" === currentTool && "select" !== e && stampSelection(), currentTool = e, document.querySelectorAll(".tool-btn").forEach(e => e.classList.remove("active")), (document.getElementById("btn-" + e) || {classList:{add(){}}}).classList.add("active"), document.getElementById("zoomHandBtn").classList.toggle("on", "hand" === e), document.getElementById("selectOptions").style.display = "select" === e ? "flex" : "none", document.getElementById("brushOptions").style.display = ["bucket", "select", "picker", "hand"].includes(e) ? "none" : "flex"
             }
 
             function setColor(e) {
