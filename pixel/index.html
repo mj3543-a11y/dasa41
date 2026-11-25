@@ -1123,8 +1123,13 @@
                 }
                 frames = t, history = n, currentFrameIndex = 0, currentLayerIndex = frames[0].length - 1, drawGrid(), renderLayersUI(), document.getElementById("frameIndicator").innerText = `1 / ${frames.length}`, drawOnionSkin(), silent || alert("프로젝트 로드 완료!")
             }
+            // GIF 도우미 파일은 처음 열 때 미리 받아 둬요(그 뒤 인터넷이 끊겨도 GIF 저장이 돼요)
+            let gifWorkerBlob = null;
+            const gifWorkerReady = (window.__GIF_WORKER_SRC ? Promise.resolve(new Blob([window.__GIF_WORKER_SRC], {
+                type: "application/javascript"
+            })) : fetch("vendor/gif.worker.js").then(r => r.ok ? r.blob() : null)).then(b => gifWorkerBlob = b && URL.createObjectURL(b)).catch(() => null);
             async function getGifWorkerUrl() {
-                return "vendor/gif.worker.js"
+                return await gifWorkerReady, gifWorkerBlob || "vendor/gif.worker.js"
             }
             window.exportGIF = async function() {
                 stampSelection();
