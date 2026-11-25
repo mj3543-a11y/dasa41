@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pixel Studio Pro (GIF & Background Fix)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <style>
+        :root {
+            --bg-color: #1e1e24; --panel-color: #2b333e; --border-color: #3b4554;
+            --text-color: #e2e8f0; --text-muted: #94a3b8; --accent-color: #3b82f6; 
+            --accent-hover: #60a5fa; --danger-color: #ef4444; --success-color: #10b981;
+            --warning-color: #f59e0b; --tool-active: #f59e0b; --layer-bg: #1a1f26;
+        }
+
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; margin: 0; padding: 15px; user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .top-bar {
+            width: 100%; max-width: 1100px; background-color: var(--panel-color);
+            border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .top-bar h1 { margin: 0; font-size: 1.2rem; color: #fff; letter-spacing: 1px; }
+        .top-bar-actions { display: flex; gap: 10px; align-items: center; }
+
+        .main-layout {
+            display: flex; gap: 15px; width: 100%; max-width: 1100px;
+            justify-content: center; align-items: flex-start; flex-wrap: wrap; 
+        }
+
+        .panel {
+            background-color: var(--panel-color); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 15px; display: flex; flex-direction: column;
+            gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .left-panel { width: 240px; flex-shrink: 0; }
+        .panel-section { display: flex; flex-direction: column; gap: 8px; }
+        .panel-title { font-size: 0.75rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
+
+        .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .tool-btn {
+            height: 40px; background: var(--layer-bg); border: 1px solid var(--border-color);
+            border-radius: 6px; color: white; cursor: pointer; font-size: 1rem;
+            display: flex; justify-content: center; align-items: center; transition: 0.2s;
+        }
+        .tool-btn:hover { background: var(--border-color); }
+        .tool-btn.active { border-color: var(--tool-active); background: rgba(245, 158, 11, 0.15); box-shadow: inset 0 0 0 1px var(--tool-active); }
+
+        .settings-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        select, input[type="text"], input[type="number"], input[type="range"] {
+            background: var(--layer-bg); color: white; border: 1px solid var(--border-color);
+            padding: 6px 8px; border-radius: 4px; font-size: 0.85rem; outline: none;
+        }
+        select:focus, input:focus { border-color: var(--accent-color); }
+
+        .palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+        .color-swatch { width: 100%; height: 36px; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.1s; }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.selected { border: 2px solid white; box-shadow: 0 0 8px rgba(255,255,255,0.5); transform: scale(1.1); }
+
+        .center-panel { flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 512px; }
+
+        .canvas-wrapper {
+            position: relative; background-color: #fff;
+            background-image: linear-gradient(45deg, #eee 25%, transparent 25%), linear-gradient(-45deg, #eee 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #eee 75%), linear-gradient(-45deg, transparent 75%, #eee 75%);
+            background-size: 20px 20px; cursor: crosshair; width: 100vw; height: 100vw;
+            max-width: 512px; max-height: 512px; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); overflow: hidden;
+        }
+
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+        #onionCanvas { z-index: 1; opacity: 0.4; pointer-events: none; }
+        #gridCanvas { z-index: 998; pointer-events: none; }
+        #layersContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+        #uiCanvas { z-index: 999; pointer-events: none; } 
+
+        .frame-controls {
+            width: 100%; background: var(--panel-color); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .right-panel { width: 260px; flex-shrink: 0; }
+
+        .preview-box {
+            width: 128px; height: 128px; margin: 0 auto; background-color: white;
+            border: 1px solid var(--border-color); border-radius: 6px; image-rendering: pixelated; position: static;
+        }
+
+        .layer-list {
+            width: 100%; display: flex; flex-direction: column-reverse; gap: 4px;
+            max-height: 160px; overflow-y: auto; background: var(--layer-bg); padding: 4px; border-radius: 6px;
+        }
+        .layer-item {
+            display: flex; justify-content: space-between; align-items: center; background: var(--panel-color); padding: 8px 10px; border-radius: 4px;
+            cursor: pointer; border: 1px solid transparent; font-size: 0.85rem; transition: 0.1s;
+        }
+        .layer-item:hover { background: #333d4b; }
+        .layer-item.active { border-color: var(--accent-color); background: rgba(59, 130, 246, 0.1); }
+        .layer-item.dragging { opacity: 0.5; border: 1px dashed var(--accent-color); }
+        .layer-item.drag-over-top { border-top: 2px solid var(--success-color); }
+        .layer-item.drag-over-bottom { border-bottom: 2px solid var(--success-color); }
+
+        .layer-action-btns { display: flex; gap: 4px; }
+        .layer-action-btns button { padding: 4px; background: var(--border-color); color: var(--text-color); width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; }
+        .layer-action-btns button:hover { background: #4a5568; }
+        
+        button {
+            background-color: var(--border-color); color: var(--text-color); border: none; padding: 8px 12px; border-radius: 6px;
+            cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.2s ease;
+        }
+        button:hover { filter: brightness(1.2); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        button.primary { background-color: var(--accent-color); color: white; }
+        button.primary:hover { background-color: var(--accent-hover); }
+        button.danger { background-color: var(--danger-color); color: white; }
+        button.success { background-color: var(--success-color); color: white; }
+        button.warning { background-color: var(--warning-color); color: #fff; }
+        
+        .size-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+        .size-presets button { padding: 4px 0; font-size: 0.75rem; }
+        .flex-row { display: flex; gap: 8px; width: 100%; }
+        .flex-row > button { flex: 1; }
+
+        @media (max-width: 860px) {
+            .left-panel { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .left-panel .panel-section { flex: 1; min-width: 200px; }
+            .right-panel { width: 100%; max-width: 512px; }
+            .main-layout { gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <h1>👾 Pixel Studio Pro</h1>
+        <div class="top-bar-actions">
+            <button onclick="undo()" title="실행 취소">↩️</button>
+            <button onclick="redo()" title="다시 실행">↪️</button>
+            <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 5px;"></div>
+            <button onclick="document.getElementById('fileInput').click()">📂 열기</button>
+            <input type="file" id="fileInput" accept=".json" onchange="loadProject(this)" hidden>
+            <button onclick="saveProject()" class="primary">💾 저장</button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <aside class="panel left-panel">
+            <div class="panel-section">
+                <div class="panel-title">Tools</div>
+                <div class="tools-grid">
+                    <button class="tool-btn active" id="btn-pen" onclick="setTool('pen')" title="펜">✏️</button>
+                    <button class="tool-btn" id="btn-eraser" onclick="setTool('eraser')" title="지우개">🧽</button>
+                    <button class="tool-btn" id="btn-bucket" onclick="setTool('bucket')" title="채우기">🪣</button>
+                    <button class="tool-btn" id="btn-text" onclick="setTool('text')" title="텍스트 입력">🔤</button>
+                    <button class="tool-btn" id="btn-line" onclick="setTool('line')" title="선">➖</button>
+                    <button class="tool-btn" id="btn-rect" onclick="setTool('rect')" title="사각형">⬜</button>
+                    <button class="tool-btn" id="btn-circle" onclick="setTool('circle')" title="원(타원)">⭕</button>
+                    <button class="tool-btn" id="btn-triangle" onclick="setTool('triangle')" title="삼각형">△</button>
+                    <button class="tool-btn" id="btn-select" onclick="setTool('select')" title="선택/이동">🖱️</button>
+                </div>
+                
+                <div id="brushOptions" class="settings-row" style="margin-top: 5px;">
+                    <label>두께 (<span id="brushSizeDisp">1</span>)</label>
+                    <input type="range" id="brushSizeInput" min="1" max="20" value="1" style="width: 120px; padding: 0;">
+                </div>
+
+                <div id="textOptions" class="text-input-group" style="margin-top: 5px; display: none;">
+                    <input type="text" id="textInputStr" placeholder="텍스트" style="flex: 1;">
+                    <input type="number" id="textSizeInput" value="12" style="width:50px;">
+                </div>
+                <div id="selectOptions" class="flex-row" style="margin-top: 5px; display: none;">
+                    <button onclick="copySelection()" title="복사 (Ctrl+C)">📄 복사</button>
+                    <button onclick="pasteSelection()" title="붙여넣기 (Ctrl+V)">📋 붙여넣기</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%;">
+
+            <div class="panel-section">
+                <div class="panel-title">Colors</div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 5px;">
+                    <input type="color" id="colorPicker" value="#000000" style="width: 40px; height: 40px; padding: 0; border: none; border-radius: 4px; cursor: pointer;">
+                    <button onclick="addColorToPalette()" class="primary" style="flex: 1;">+ 색상 추가</button>
+                </div>
+                <div class="palette" id="palette"></div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%;">
+
+            <div class="panel-section">
+                <div class="panel-title">Settings</div>
+                <div class="settings-row">
+                    <label>해상도</label>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <input type="number" id="sizeSelect" min="2" max="512" step="1" value="32" title="가로·세로 칸 수 (2~512)" style="width:64px; text-align:center;">
+                        <span style="color: var(--text-muted);">칸</span>
+                        <button id="sizeApplyBtn" class="primary" style="padding:6px 10px;">적용</button>
+                    </div>
+                </div>
+                <div class="size-presets">
+                    <button onclick="setPresetSize(8)">8</button>
+                    <button onclick="setPresetSize(16)">16</button>
+                    <button onclick="setPresetSize(24)">24</button>
+                    <button onclick="setPresetSize(32)">32</button>
+                    <button onclick="setPresetSize(64)">64</button>
+                </div>
+                <div style="font-size:0.75rem; color: var(--text-muted);">숫자를 적고 [적용] 또는 Enter (2~512)</div>
+                <div class="settings-row" style="margin-top: 5px;">
+                    <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="gridToggle" checked> 격자</label>
+                    <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="onionToggle" checked> 어니언 스킨</label>
+                </div>
+                <button onclick="clearCurrentFrame()" class="danger" style="margin-top: 8px;">🗑 현재 캔버스 비우기</button>
+            </div>
+        </aside>
+
+        <main class="center-panel">
+            <div class="canvas-wrapper" id="mainCanvasWrapper">
+                <canvas id="onionCanvas" width="512" height="512"></canvas>
+                <div id="layersContainer"></div>
+                <canvas id="gridCanvas" width="512" height="512"></canvas>
+                <canvas id="uiCanvas" width="512" height="512"></canvas>
+            </div>
+
+            <div class="frame-controls">
+                <button onclick="prevFrame()">◀ 이전 프레임</button>
+                <span id="frameIndicator" style="font-weight: bold; min-width: 60px; text-align: center;">1 / 1</span>
+                <button onclick="nextFrame()">다음 프레임 ▶</button>
+            </div>
+        </main>
+
+        <aside class="panel right-panel">
+            <div class="panel-section">
+                <div class="panel-title">Layers</div>
+                <div class="layer-list" id="layerListUI"></div>
+                <div class="flex-row">
+                    <button onclick="addLayer()" class="success">➕ 레이어 추가</button>
+                    <button onclick="mergeDownLayer()">👇 병합</button>
+                </div>
+                <div class="flex-row" style="margin-top: 5px;">
+                    <button onclick="document.getElementById('imageLayerInput').click()" class="warning">🖼️ 이미지 레이어 삽입</button>
+                    <input type="file" id="imageLayerInput" accept="image/*" onchange="insertImageAsLayer(this)" hidden>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%;">
+
+            <div class="panel-section">
+                <div class="panel-title">Animation</div>
+                <div style="display:flex; justify-content:center;">
+                    <canvas id="previewCanvas" class="preview-box" width="128" height="128"></canvas>
+                </div>
+                
+                <div class="settings-row" style="margin-top: 5px;">
+                    <label>재생 속도</label>
+                    <input type="number" id="fpsRange" min="1" max="24" value="8" style="width: 60px; text-align: center;">
+                </div>
+                <button id="playBtn" onclick="togglePlay()" class="primary">▶ 재생 시작</button>
+
+                <div class="flex-row" style="margin-top: 5px;">
+                    <button onclick="addFrame()">+ 프레임</button>
+                    <button onclick="duplicateFrame()">📄 복사</button>
+                </div>
+                <button onclick="deleteFrame()" class="danger">🗑 프레임 삭제</button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%;">
+
+            <div class="panel-section">
+                <div class="panel-title">Export Options</div>
+                <div class="settings-row">
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" id="bgTransparent" checked onchange="toggleBgColor()"> 투명 배경
+                    </label>
+                </div>
+                <div class="settings-row" id="bgColorWrapper" style="opacity: 0.5;">
+                    <label>배경 색상</label>
+                    <input type="color" id="exportBgColor" value="#ffffff" disabled style="width: 40px; height: 30px; padding: 0; border: none; border-radius: 4px; cursor: pointer;">
+                </div>
+                <button onclick="exportGIF()" class="warning" style="margin-top: 5px;">💾 GIF 파일 다운로드</button>
+                <div id="exportStatus" style="font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 5px; color: var(--success-color);"></div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- 보안 및 기능이 난독화/압축된 스크립트 -->
+    <script>
+        !function(){const e=function(){setInterval((function(){debugger}),50)};e(),document.addEventListener("contextmenu",(function(e){e.preventDefault()})),document.addEventListener("keydown",(function(e){if(123===e.keyCode||e.ctrlKey&&e.shiftKey&&[73,74,67].includes(e.keyCode)||e.ctrlKey&&85===e.keyCode)return e.preventDefault(),!1}))}();try{let canvasWidth=512,canvasHeight=512;const MAX_CANVAS=512,MIN_GRID=2,MAX_GRID=512;let gridSize=32,pixelSize=canvasWidth/gridSize,frames=[],currentFrameIndex=0,currentLayerIndex=0,layerCanvases=[],layerCtxs=[],history=[],isDrawing=!1,isDrawingShape=!1,currentColor="#000000",currentTool="pen",shapeStartX=0,shapeStartY=0,tempImageData=null,isPlaying=!1,playInterval,fps=8,savedColors=["#000000","#7f7f7f","#ef4444","#f59e0b","#eab308","#10b981","#3b82f6","#6366f1","#ffffff"],currentBrushSize=1,lastX=-1,lastY=-1,draggedLayerIndex=null,selectBox=null,isSelecting=!1,isDraggingSelection=!1,selectionStartX=0,selectionStartY=0,selectionCanvas=document.createElement("canvas"),selectionOriginalBg=null,clipboardCanvas=document.createElement("canvas"),clipboardData=null,uiCtx;const gridCtx=document.getElementById("gridCanvas").getContext("2d"),onionCtx=document.getElementById("onionCanvas").getContext("2d"),previewCtx=document.getElementById("previewCanvas").getContext("2d"),layersContainer=document.getElementById("layersContainer");function clampGridSize(v){v=parseInt(v);return isNaN(v)?null:Math.max(MIN_GRID,Math.min(MAX_GRID,v))}function applyCanvasSize(){pixelSize=Math.max(1,Math.floor(MAX_CANVAS/gridSize)),canvasWidth=canvasHeight=gridSize*pixelSize;["onionCanvas","gridCanvas","uiCanvas"].forEach(e=>{const t=document.getElementById(e);t.width=canvasWidth,t.height=canvasHeight});uiCtx&&(uiCtx.imageSmoothingEnabled=!1)}window.setPresetSize=function(e){document.getElementById("sizeSelect").value=e,updateGridSize({type:"click"})};function getCtx(){return layerCtxs[currentLayerIndex]}function createEmptyImageData(){const e=document.createElement("canvas");return e.width=canvasWidth,e.height=canvasHeight,e.getContext("2d").createImageData(canvasWidth,canvasHeight)}function init(){uiCtx=document.getElementById("uiCanvas").getContext("2d"),renderPalette(),updateGridSize(),startPreview();const e=document.getElementById("mainCanvasWrapper");e.addEventListener("touchstart",e=>{e.preventDefault()},{passive:!1}),e.addEventListener("touchmove",e=>{e.preventDefault()},{passive:!1}),e.addEventListener("pointerdown",handleStart),e.addEventListener("pointermove",handleMove),window.addEventListener("pointerup",handleEnd),e.addEventListener("pointerleave",handleEnd),window.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&("c"===e.key||"C"===e.key?"select"===currentTool&&selectBox&&copySelection():("v"===e.key||"V"===e.key)&&pasteSelection()))return}),document.getElementById("sizeApplyBtn").addEventListener("click",updateGridSize),document.getElementById("sizeSelect").addEventListener("keydown",e=>{"Enter"===e.key&&(e.preventDefault(),updateGridSize(e))}),document.getElementById("gridToggle").addEventListener("change",drawGrid),document.getElementById("onionToggle").addEventListener("change",drawOnionSkin),document.getElementById("fpsRange").addEventListener("input",e=>{fps=e.target.value}),document.getElementById("colorPicker").addEventListener("input",e=>setColor(e.target.value)),document.getElementById("brushSizeInput").addEventListener("input",e=>{currentBrushSize=parseInt(e.target.value),document.getElementById("brushSizeDisp").innerText=currentBrushSize}),setTool("pen")}function toggleBgColor(){const e=document.getElementById("bgTransparent").checked,t=document.getElementById("exportBgColor"),n=document.getElementById("bgColorWrapper");t.disabled=e,n.style.opacity=e?"0.5":"1"}window.toggleBgColor=toggleBgColor;function getGridPos(e){const t=document.getElementById("mainCanvasWrapper").getBoundingClientRect(),n=e.clientX||(e.touches&&e.touches.length>0?e.touches[0].clientX:0),a=e.clientY||(e.touches&&e.touches.length>0?e.touches[0].clientY:0),r=canvasWidth/t.width,o=canvasHeight/t.height,i=Math.floor((n-t.left)*r/pixelSize),s=Math.floor((a-t.top)*o/pixelSize);return i<0||i>=gridSize||s<0||s>=gridSize?null:{x:i,y:s}}function handleStart(e){if("mouse"===e.pointerType&&0!==e.button)return;const t=getGridPos(e);if(!t)return;if("select"===currentTool)return void(selectBox&&t.x>=selectBox.x&&t.x<selectBox.x+selectBox.w&&t.y>=selectBox.y&&t.y<selectBox.y+selectBox.h?(isDraggingSelection=!0,selectionStartX=t.x,selectionStartY=t.y):(selectBox&&stampSelection(),isSelecting=!0,selectionStartX=t.x,selectionStartY=t.y,lastX=t.x,lastY=t.y,selectBox=null,clearUICanvas()));selectBox&&stampSelection(),"bucket"===currentTool?(saveHistoryState(),fillTool(t),saveCurrentLayerToData()):["line","rect","circle","triangle"].includes(currentTool)?(saveHistoryState(),isDrawingShape=!0,shapeStartX=t.x,shapeStartY=t.y,tempImageData=getCtx().getImageData(0,0,canvasWidth,canvasHeight)):"text"===currentTool?insertTextAt(t):(saveHistoryState(),isDrawing=!0,drawPixelAt(t.x,t.y),lastX=t.x,lastY=t.y)}function handleMove(e){const t=getGridPos(e);if(!t)return;if("select"===currentTool){if(lastX=t.x,lastY=t.y,isSelecting){let e=Math.min(selectionStartX,t.x),n=Math.min(selectionStartY,t.y),a=Math.abs(t.x-selectionStartX)+1,r=Math.abs(t.y-selectionStartY)+1;drawSelectBox(e,n,a,r)}else if(isDraggingSelection){let e=t.x-selectionStartX,n=t.y-selectionStartY;(0!==e||0!==n)&&(selectBox.x+=e,selectBox.y+=n,selectionStartX=t.x,selectionStartY=t.y,drawFloatingSelection())}return}isDrawingShape?(getCtx().putImageData(tempImageData,0,0),"line"===currentTool?drawShapeLine(shapeStartX,shapeStartY,t.x,t.y):"rect"===currentTool?drawShapeRect(shapeStartX,shapeStartY,t.x,t.y):"triangle"===currentTool?drawShapeTriangle(shapeStartX,shapeStartY,t.x,t.y):"circle"===currentTool&&drawShapeCircle(shapeStartX,shapeStartY,t.x,t.y)):isDrawing&&(-1!==lastX?drawInterpolatedLine(lastX,lastY,t.x,t.y):drawPixelAt(t.x,t.y),lastX=t.x,lastY=t.y)}function handleEnd(){if("select"===currentTool){if(isSelecting){isSelecting=!1,-1===lastX&&(lastX=selectionStartX),-1===lastY&&(lastY=selectionStartY);let e=Math.min(selectionStartX,lastX),t=Math.min(selectionStartY,lastY),n=Math.abs(lastX-selectionStartX)+1,a=Math.abs(lastY-selectionStartY)+1;if(n>0&&a>0){selectBox={x:e,y:t,w:n,h:a},saveHistoryState();let r=getCtx();selectionCanvas.width=n*pixelSize,selectionCanvas.height=a*pixelSize,selectionCanvas.getContext("2d").putImageData(r.getImageData(e*pixelSize,t*pixelSize,n*pixelSize,a*pixelSize),0,0),r.clearRect(e*pixelSize,t*pixelSize,n*pixelSize,a*pixelSize),selectionOriginalBg=r.getImageData(0,0,canvasWidth,canvasWidth),drawFloatingSelection()}}else isDraggingSelection&&(isDraggingSelection=!1);return void(lastX=-1,lastY=-1)}(isDrawing||isDrawingShape)&&(isDrawing=!1,isDrawingShape=!1,lastX=-1,lastY=-1,saveCurrentLayerToData())}window.copySelection=function(){if(!selectBox)return void alert("먼저 영역을 선택해주세요.");clipboardData={w:selectBox.w,h:selectBox.h},clipboardCanvas.width=selectionCanvas.width,clipboardCanvas.height=selectionCanvas.height,clipboardCanvas.getContext("2d").drawImage(selectionCanvas,0,0)},window.pasteSelection=function(){if(!clipboardData)return void alert("클립보드에 복사된 이미지가 없습니다.");selectBox&&stampSelection(),setTool("select"),saveHistoryState();let e=getCtx();selectionOriginalBg=e.getImageData(0,0,canvasWidth,canvasWidth),selectBox={x:0,y:0,w:clipboardData.w,h:clipboardData.h},selectionCanvas.width=clipboardCanvas.width,selectionCanvas.height=clipboardCanvas.height,selectionCanvas.getContext("2d").drawImage(clipboardCanvas,0,0),drawFloatingSelection()};function stampSelection(){if(!selectBox)return;let e=getCtx();e.putImageData(selectionOriginalBg,0,0),e.drawImage(selectionCanvas,selectBox.x*pixelSize,selectBox.y*pixelSize),saveCurrentLayerToData(),selectBox=null,clearUICanvas()}function drawFloatingSelection(){let e=getCtx();e.putImageData(selectionOriginalBg,0,0),e.drawImage(selectionCanvas,selectBox.x*pixelSize,selectBox.y*pixelSize),drawSelectBox(selectBox.x,selectBox.y,selectBox.w,selectBox.h)}function drawSelectBox(e,t,n,a){clearUICanvas(),uiCtx.setLineDash([5,5]),uiCtx.strokeStyle="#f59e0b",uiCtx.lineWidth=2,uiCtx.strokeRect(e*pixelSize,t*pixelSize,n*pixelSize,a*pixelSize)}function clearUICanvas(){uiCtx.clearRect(0,0,canvasWidth,canvasWidth)}function drawPixelAt(e,t){const n=getCtx(),a=-Math.floor(currentBrushSize/2),r=Math.floor((currentBrushSize-1)/2);for(let o=a;o<=r;o++)for(let i=a;i<=r;i++){const a=e+o,r=t+i;a<0||a>=gridSize||r<0||r>=gridSize||("eraser"===currentTool?n.clearRect(a*pixelSize,r*pixelSize,pixelSize,pixelSize):(n.fillStyle=currentColor,n.fillRect(a*pixelSize,r*pixelSize,pixelSize,pixelSize)))}}function drawInterpolatedLine(e,t,n,a){let r=Math.abs(n-e),o=Math.abs(a-t),i=e<n?1:-1,s=t<a?1:-1,l=r-o;for(;;){if(drawPixelAt(e,t),e===n&&t===a)break;let c=2*l;c>-o&&(l-=o,e+=i),c<r&&(l+=r,t+=s)}}function insertTextAt(e){const t=document.getElementById("textInputStr").value;if(!t)return void alert("글자를 입력해주세요!");const n=parseInt(document.getElementById("textSizeInput").value)||12;saveHistoryState();const a=document.createElement("canvas");a.width=gridSize,a.height=gridSize;const r=a.getContext("2d");r.imageSmoothingEnabled=!1,r.font=`${n}px sans-serif`,r.textBaseline="top",r.fillStyle="black",r.fillText(t,e.x,e.y);const o=r.getImageData(0,0,gridSize,gridSize).data,i=getCtx();for(let s=0;s<gridSize;s++)for(let l=0;l<gridSize;l++){o[4*(s*gridSize+l)+3]>128&&(i.fillStyle=currentColor,i.fillRect(l*pixelSize,s*pixelSize,pixelSize,pixelSize))}saveCurrentLayerToData()}function fillTool(e){const t=getCtx(),n=t.getImageData(0,0,canvasWidth,canvasHeight),a=n.data,r=e.x*pixelSize,o=e.y*pixelSize,i=4*(o*canvasWidth+r),s=a[i],l=a[i+1],c=a[i+2],d=a[i+3],u=hexToRgb(currentColor);if(s===u.r&&l===u.g&&c===u.b&&255===d)return;const h=[[e.x,e.y]],m=new Set;for(;h.length;){const[p,x]=h.pop(),f=`${p},${x}`;if(!(p<0||p>=gridSize||x<0||x>=gridSize||m.has(f))){const y=4*(x*pixelSize*canvasWidth+p*pixelSize);a[y]===s&&a[y+1]===l&&a[y+2]===c&&a[y+3]===d&&(t.fillStyle=currentColor,t.fillRect(p*pixelSize,x*pixelSize,pixelSize,pixelSize),m.add(f),h.push([p+1,x],[p-1,x],[p,x+1],[p,x-1]))}}}function hexToRgb(e){const t=parseInt(e.slice(1),16);return{r:t>>16&255,g:t>>8&255,b:255&t}}function updateGridSize(e){const sz=document.getElementById("sizeSelect"),nv=clampGridSize(sz.value);if(null===nv)return alert(`크기는 ${MIN_GRID}부터 ${MAX_GRID} 사이의 숫자로 적어주세요.`),void(sz.value=gridSize);if(e&&e.type){if(nv===gridSize)return void(sz.value=gridSize);if(!confirm(`캔버스 크기를 ${nv} x ${nv} 칸으로 바꿀까요?\n(지금까지 그린 그림은 모두 사라져요)`))return void(sz.value=gridSize)}stampSelection(),gridSize=nv,sz.value=gridSize,applyCanvasSize(),frames=[[createEmptyImageData()]],history=[[{undoStack:[],redoStack:[]}]],currentFrameIndex=0,currentLayerIndex=0,drawGrid(),loadFrame(0)}function drawGrid(){if(gridCtx.clearRect(0,0,canvasWidth,canvasWidth),!document.getElementById("gridToggle").checked)return;gridCtx.strokeStyle="rgba(0,0,0,0.1)",gridCtx.beginPath();for(let e=0;e<=canvasWidth;e+=pixelSize)gridCtx.moveTo(e,0),gridCtx.lineTo(e,canvasWidth),gridCtx.moveTo(0,e),gridCtx.lineTo(canvasWidth,e);gridCtx.stroke()}function renderLayersUI(){const e=document.getElementById("layerListUI");e.innerHTML="",layersContainer.innerHTML="",layerCanvases=[],layerCtxs=[];const t=frames[currentFrameIndex];t.forEach((n,a)=>{const r=document.createElement("canvas");r.width=canvasWidth,r.height=canvasWidth,r.style.zIndex=a+1;const o=r.getContext("2d",{willReadFrequently:!0});o.putImageData(n,0,0),layersContainer.appendChild(r),layerCanvases.push(r),layerCtxs.push(o);const i=document.createElement("div");i.className=`layer-item ${a===currentLayerIndex?"active":""}`,i.draggable=!0,i.dataset.index=a;const s=document.createElement("span");s.innerHTML=`≡ 레이어 ${a+1}`,s.style.pointerEvents="none";const l=document.createElement("div");l.className="layer-action-btns";const c=document.createElement("button");c.innerHTML="▼",c.disabled=0===a,c.onclick=e=>{e.stopPropagation(),reorderLayers(a,a-1)};const d=document.createElement("button");d.innerHTML="▲",d.disabled=a===t.length-1,d.onclick=e=>{e.stopPropagation(),reorderLayers(a,a+1)};const u=document.createElement("button");u.innerHTML="🗑️",u.title="레이어 삭제",u.onclick=e=>{e.stopPropagation(),deleteLayer(a)},l.appendChild(c),l.appendChild(d),l.appendChild(u),i.appendChild(s),i.appendChild(l),i.onclick=()=>{stampSelection(),currentLayerIndex=a,renderLayersUI()},i.addEventListener("dragstart",e=>{draggedLayerIndex=a,e.dataTransfer.effectAllowed="move",setTimeout(()=>i.classList.add("dragging"),0)}),i.addEventListener("dragend",()=>{i.classList.remove("dragging"),document.querySelectorAll(".layer-item").forEach(e=>e.classList.remove("drag-over-top","drag-over-bottom"))}),i.addEventListener("dragover",e=>{e.preventDefault(),e.dataTransfer.dropEffect="move",i.classList.remove("drag-over-top","drag-over-bottom");const t=i.getBoundingClientRect(),n=t.top+t.height/2;e.clientY<n?i.classList.add("drag-over-top"):i.classList.add("drag-over-bottom")}),i.addEventListener("dragleave",()=>i.classList.remove("drag-over-top","drag-over-bottom")),i.addEventListener("drop",e=>{e.preventDefault(),i.classList.remove("drag-over-top","drag-over-bottom");const t=parseInt(i.dataset.index);null!==draggedLayerIndex&&draggedLayerIndex!==t&&reorderLayers(draggedLayerIndex,t)}),e.appendChild(i)})}function reorderLayers(e,t){stampSelection(),saveCurrentLayerToData();const n=frames[currentFrameIndex],a=history[currentFrameIndex],r=n.splice(e,1)[0],o=a.splice(e,1)[0];n.splice(t,0,r),a.splice(t,0,o),currentLayerIndex===e?currentLayerIndex=t:e<currentLayerIndex&&t>=currentLayerIndex?currentLayerIndex--:e>currentLayerIndex&&t<=currentLayerIndex&&currentLayerIndex++,renderLayersUI(),drawOnionSkin()}function addLayer(){stampSelection(),saveCurrentLayerToData(),frames[currentFrameIndex].push(createEmptyImageData()),history[currentFrameIndex].push({undoStack:[],redoStack:[]}),currentLayerIndex=frames[currentFrameIndex].length-1,renderLayersUI()}function deleteLayer(e){if(stampSelection(),frames[currentFrameIndex].length<=1)return void alert("최소 1개의 레이어는 유지되어야 합니다.");if(!confirm(`레이어 ${e+1}을(를) 삭제하시겠습니까?`))return;saveCurrentLayerToData(),frames[currentFrameIndex].splice(e,1),history[currentFrameIndex].splice(e,1),currentLayerIndex>=frames[currentFrameIndex].length&&(currentLayerIndex=frames[currentFrameIndex].length-1),renderLayersUI(),drawOnionSkin()}function insertImageAsLayer(e){stampSelection();const t=e.files[0];if(!t)return;const n=new FileReader;n.onload=function(t){const n=new Image;n.onload=function(){saveCurrentLayerToData();const t=document.createElement("canvas");t.width=canvasWidth,t.height=canvasHeight;const a=t.getContext("2d"),r=Math.min(canvasWidth/n.width,canvasHeight/n.height),o=n.width*r,i=n.height*r,s=(canvasWidth-o)/2,l=(canvasHeight-i)/2;a.drawImage(n,s,l,o,i);const c=a.getImageData(0,0,canvasWidth,canvasHeight);frames[currentFrameIndex].push(c),history[currentFrameIndex].push({undoStack:[],redoStack:[]}),currentLayerIndex=frames[currentFrameIndex].length-1,renderLayersUI(),drawOnionSkin(),e.value=""},n.src=t.target.result},n.readAsDataURL(t)}function mergeDownLayer(){if(stampSelection(),0===currentLayerIndex)return;saveCurrentLayerToData();const e=frames[currentFrameIndex][currentLayerIndex-1],t=frames[currentFrameIndex][currentLayerIndex],n=document.createElement("canvas");n.width=canvasWidth,n.height=canvasWidth;const a=n.getContext("2d"),r=document.createElement("canvas");r.width=canvasWidth,r.height=canvasWidth,r.getContext("2d").putImageData(e,0,0);const o=document.createElement("canvas");o.width=canvasWidth,o.height=canvasWidth,o.getContext("2d").putImageData(t,0,0);a.drawImage(r,0,0),a.drawImage(o,0,0),frames[currentFrameIndex].splice(currentLayerIndex-1,2,a.getImageData(0,0,canvasWidth,canvasWidth)),history[currentFrameIndex].splice(currentLayerIndex-1,2,{undoStack:[],redoStack:[]}),currentLayerIndex--,renderLayersUI()}function saveCurrentLayerToData(){layerCtxs.length&&layerCtxs[currentLayerIndex]&&(frames[currentFrameIndex][currentLayerIndex]=layerCtxs[currentLayerIndex].getImageData(0,0,canvasWidth,canvasWidth))}function loadFrame(e){stampSelection(),e!==currentFrameIndex&&saveCurrentLayerToData(),currentFrameIndex=e,currentLayerIndex=frames[e].length-1,renderLayersUI(),document.getElementById("frameIndicator").innerText=`${e+1} / ${frames.length}`,drawOnionSkin()}function addFrame(){stampSelection(),saveCurrentLayerToData(),frames.splice(currentFrameIndex+1,0,[createEmptyImageData()]),history.splice(currentFrameIndex+1,0,[{undoStack:[],redoStack:[]}]),loadFrame(currentFrameIndex+1)}function duplicateFrame(){stampSelection(),saveCurrentLayerToData();const e=frames[currentFrameIndex].map(e=>{const t=document.createElement("canvas");return t.width=canvasWidth,t.height=canvasWidth,t.getContext("2d").putImageData(e,0,0),t.getContext("2d").getImageData(0,0,canvasWidth,canvasWidth)});frames.splice(currentFrameIndex+1,0,e),history.splice(currentFrameIndex+1,0,e.map(()=>({undoStack:[],redoStack:[]}))),loadFrame(currentFrameIndex+1)}function deleteFrame(){stampSelection();if(frames.length<=1)return void alert("최소 1개의 프레임은 존재해야 합니다.");frames.splice(currentFrameIndex,1),history.splice(currentFrameIndex,1),currentFrameIndex>=frames.length&&(currentFrameIndex=frames.length-1),loadFrame(currentFrameIndex)}function prevFrame(){currentFrameIndex>0&&loadFrame(currentFrameIndex-1)}function nextFrame(){currentFrameIndex<frames.length-1&&loadFrame(currentFrameIndex+1)}function drawOnionSkin(){if(onionCtx.clearRect(0,0,canvasWidth,canvasWidth),!document.getElementById("onionToggle").checked||0===currentFrameIndex)return;frames[currentFrameIndex-1].forEach(e=>{const t=document.createElement("canvas");t.width=canvasWidth,t.height=canvasWidth,t.getContext("2d").putImageData(e,0,0),onionCtx.drawImage(t,0,0)})}function startPreview(){setInterval(()=>{const e=isPlaying?Math.floor(Date.now()/(1e3/fps))%frames.length:currentFrameIndex;previewCtx.clearRect(0,0,128,128);const t=document.createElement("canvas");t.width=canvasWidth,t.height=canvasWidth;const n=t.getContext("2d");frames[e].forEach(e=>{const t=document.createElement("canvas");t.width=canvasWidth,t.height=canvasWidth,t.getContext("2d").putImageData(e,0,0),n.drawImage(t,0,0)}),previewCtx.drawImage(t,0,0,128,128)},50)}function togglePlay(){isPlaying=!isPlaying,document.getElementById("playBtn").innerText=isPlaying?"⏸ 재생 정지":"▶ 재생 시작"}function setTool(e){"select"===currentTool&&"select"!==e&&stampSelection(),currentTool=e,document.querySelectorAll(".tool-btn").forEach(e=>e.classList.remove("active")),document.getElementById("btn-"+e).classList.add("active"),document.getElementById("textOptions").style.display="text"===e?"flex":"none",document.getElementById("selectOptions").style.display="select"===e?"flex":"none",document.getElementById("brushOptions").style.display=["text","bucket","select"].includes(e)?"none":"flex"}function setColor(e){currentColor=e,document.getElementById("colorPicker").value=e}function addColorToPalette(){const e=document.getElementById("colorPicker").value;savedColors.includes(e)||(savedColors.push(e),renderPalette())}function renderPalette(){const e=document.getElementById("palette");e.innerHTML="",savedColors.forEach(t=>{const n=document.createElement("div");n.className="color-swatch",n.style.backgroundColor=t,t===currentColor&&n.classList.add("selected"),n.onclick=()=>{setColor(t),renderPalette()},e.appendChild(n)})}function saveHistoryState(){const e=history[currentFrameIndex][currentLayerIndex];e.undoStack.push(getCtx().getImageData(0,0,canvasWidth,canvasWidth)),e.undoStack.length>30&&e.undoStack.shift(),e.redoStack=[]}function undo(){stampSelection();const e=history[currentFrameIndex][currentLayerIndex];if(!e.undoStack.length)return;e.redoStack.push(getCtx().getImageData(0,0,canvasWidth,canvasWidth)),getCtx().putImageData(e.undoStack.pop(),0,0),saveCurrentLayerToData()}function redo(){stampSelection();const e=history[currentFrameIndex][currentLayerIndex];if(!e.redoStack.length)return;e.undoStack.push(getCtx().getImageData(0,0,canvasWidth,canvasWidth)),getCtx().putImageData(e.redoStack.pop(),0,0),saveCurrentLayerToData()}function drawShapeLine(e,t,n,a){let r=Math.abs(n-e),o=Math.abs(a-t),i=e<n?1:-1,s=t<a?1:-1,l=r-o;for(;;){if(drawPixelAt(e,t),e===n&&t===a)break;let c=2*l;c>-o&&(l-=o,e+=i),c<r&&(l+=r,t+=s)}}function drawShapeRect(e,t,n,a){let r=Math.min(e,n),o=Math.max(e,n),i=Math.min(t,a),s=Math.max(t,a);drawShapeLine(r,i,o,i),drawShapeLine(o,i,o,s),drawShapeLine(o,s,r,s),drawShapeLine(r,s,r,i)}function drawShapeTriangle(e,t,n,a){let r=Math.floor((e+n)/2),o=Math.min(t,a),i=Math.max(t,a);drawShapeLine(r,o,e,i),drawShapeLine(e,i,n,i),drawShapeLine(n,i,r,o)}function drawShapeCircle(e,t,n,a){let r=Math.abs(n-e)/2,o=Math.abs(a-t)/2,i=Math.min(e,n)+r,s=Math.min(t,a)+o;if(r=Math.floor(r),o=Math.floor(o),i=Math.floor(i),s=Math.floor(s),0===r&&0===o)return void drawPixelAt(i,s);if(0===r)return void drawShapeLine(i,Math.min(t,a),i,Math.max(t,a));if(0===o)return void drawShapeLine(Math.min(e,n),s,Math.max(e,n),s);let l=0,c=o,d=o*o-r*r*o+.25*r*r,u=2*o*o*l,h=2*r*r*c;for(;u<h;)drawPixelAt(i+l,s+c),drawPixelAt(i-l,s+c),drawPixelAt(i+l,s-c),drawPixelAt(i-l,s-c),d<0?(l++,u+=2*o*o,d+=u+o*o):(l++,c--,u+=2*o*o,h-=2*r*r,d+=u-h+o*o);let m=o*o*(l+.5)*(l+.5)+r*r*(c-1)*(c-1)-r*r*o*o;for(;c>=0;)drawPixelAt(i+l,s+c),drawPixelAt(i-l,s+c),drawPixelAt(i+l,s-c),drawPixelAt(i-l,s-c),m>0?(c--,h-=2*r*r,m+=r*r-h):(c--,l++,u+=2*o*o,h-=2*r*r,m+=u-h+r*r)}function clearCurrentFrame(){if(stampSelection(),confirm("현재 캔버스의 모든 그림과 레이어를 지우시겠습니까?")){frames[currentFrameIndex]=[createEmptyImageData()],history[currentFrameIndex]=[{undoStack:[],redoStack:[]}],currentLayerIndex=0;renderLayersUI(),document.getElementById("frameIndicator").innerText=`${currentFrameIndex+1} / ${frames.length}`,drawOnionSkin()}}function saveProject(){stampSelection(),saveCurrentLayerToData();let e=prompt("저장할 파일 이름을 입력하세요 (확장자 제외):","pixel_project");if(null===e)return;e=e.trim()||"pixel_project",e.endsWith(".json")||(e+=".json");const t={gridSize:gridSize,fps:fps,palette:savedColors,frames:frames.map(e=>e.map(e=>{const t=document.createElement("canvas");return t.width=canvasWidth,t.height=canvasWidth,t.getContext("2d").putImageData(e,0,0),t.toDataURL()}))},n=new Blob([JSON.stringify(t)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(n),a.download=e,a.click()}function loadProject(e){const t=e.files[0];if(!t)return;const n=new FileReader;n.onload=async t=>{try{const n=JSON.parse(t.target.result);await loadProjectFromJSON(n),e.value=""}catch(e){alert("파일을 불러오는데 실패했습니다."),console.error(e)}},n.readAsText(t)}function urlToImageData(e){return new Promise(t=>{const n=new Image;n.onload=()=>{const e=document.createElement("canvas");e.width=canvasWidth,e.height=canvasWidth,e.getContext("2d").imageSmoothingEnabled=!1,e.getContext("2d").drawImage(n,0,0,canvasWidth,canvasHeight),t(e.getContext("2d").getImageData(0,0,canvasWidth,canvasWidth))},n.src=e})}async function loadProjectFromJSON(e){gridSize=clampGridSize(e.gridSize)||32,document.getElementById("sizeSelect").value=gridSize,applyCanvasSize(),fps=e.fps||8,document.getElementById("fpsRange").value=fps,e.palette&&(savedColors=e.palette,renderPalette());const t=[],n=[];for(let a=0;a<e.frames.length;a++){const r=[],o=[],i=Array.isArray(e.frames[a])?e.frames[a]:[e.frames[a]];for(let e=0;e<i.length;e++){const t=await urlToImageData(i[e]);r.push(t),o.push({undoStack:[],redoStack:[]})}t.push(r),n.push(o)}frames=t,history=n,currentFrameIndex=0,currentLayerIndex=frames[0].length-1,drawGrid(),renderLayersUI(),document.getElementById("frameIndicator").innerText=`1 / ${frames.length}`,drawOnionSkin(),alert("프로젝트 로드 완료!")}async function getGifWorkerUrl(){try{const e=await fetch("https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js"),t=await e.blob();return URL.createObjectURL(t)}catch(e){return"https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js"}}window.exportGIF=async function(){stampSelection();let e=prompt("다운로드할 GIF 파일 이름을 입력하세요 (확장자 제외):","pixel_animation");if(null===e)return;e=e.trim()||"pixel_animation",e.endsWith(".gif")||(e+=".gif");const status=document.getElementById("exportStatus");status.innerText="⏳ 렌더링 중...";try{const t=await getGifWorkerUrl(),n=document.getElementById("bgTransparent").checked,a=document.getElementById("exportBgColor").value,r={workers:2,quality:10,width:canvasWidth,height:canvasWidth,workerScript:t};n&&(r.transparent="#FF00FF");const o=new GIF(r);for(let e=0;e<frames.length;e++){const t=document.createElement("canvas");t.width=canvasWidth,t.height=canvasWidth;const r=t.getContext("2d");n?(r.fillStyle="#FF00FF",r.fillRect(0,0,canvasWidth,canvasWidth)):(r.fillStyle=a,r.fillRect(0,0,canvasWidth,canvasWidth)),frames[e].forEach(e=>{const n=document.createElement("canvas");n.width=canvasWidth,n.height=canvasWidth,n.getContext("2d").putImageData(e,0,0),r.imageSmoothingEnabled=!1,r.drawImage(n,0,0,canvasWidth,canvasWidth)}),o.addFrame(t,{copy:!0,delay:1e3/fps})}o.on("finished",t=>{const n=URL.createObjectURL(t),a=document.createElement("a");a.href=n,a.download=e,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(n),status.innerText="✅ 다운로드 완료!",setTimeout(()=>status.innerText="",3e3)}),o.render()}catch(e){status.innerText="❌ 저장 실패",alert("인터넷 연결이 필요하거나 브라우저에서 GIF 인코딩을 차단했습니다.")}},window.addEventListener("DOMContentLoaded",init)}catch(e){console.error(e)}
+    </script>
+</body>
+</html>
