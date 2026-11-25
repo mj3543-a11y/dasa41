@@ -199,7 +199,6 @@
                     <button class="tool-btn" id="btn-eraser" onclick="setTool('eraser')" title="지우개"><span class="ti">🧽</span><span class="tl">지우개</span></button>
                     <button class="tool-btn" id="btn-bucket" onclick="setTool('bucket')" title="채우기"><span class="ti">🪣</span><span class="tl">채우기</span></button>
                     <button class="tool-btn" id="btn-picker" onclick="setTool('picker')" title="스포이드"><span class="ti">💧</span><span class="tl">스포이드</span></button>
-                    <button class="tool-btn" id="btn-text" onclick="setTool('text')" title="글자"><span class="ti">🔤</span><span class="tl">글자</span></button>
                     <button class="tool-btn" id="btn-line" onclick="setTool('line')" title="선"><span class="ti">➖</span><span class="tl">선</span></button>
                     <button class="tool-btn" id="btn-rect" onclick="setTool('rect')" title="네모"><span class="ti">⬜</span><span class="tl">네모</span></button>
                     <button class="tool-btn" id="btn-circle" onclick="setTool('circle')" title="동그라미"><span class="ti">⭕</span><span class="tl">동그라미</span></button>
@@ -216,10 +215,6 @@
                 <label id="mirrorOption" class="opt-toggle" title="한쪽에 그리면 반대쪽에도 똑같이 그려져요"><input type="checkbox" id="mirrorToggle"> 🪞 좌우 대칭으로 그리기</label>
                 <label id="fillOption" class="opt-toggle" style="display:none;" title="네모·동그라미·세모의 속까지 칠해요"><input type="checkbox" id="fillToggle"> ■ 도형 속까지 채우기</label>
 
-                <div id="textOptions" class="text-input-group" style="margin-top: 5px; display: none;">
-                    <input type="text" id="textInputStr" placeholder="텍스트" style="flex: 1;">
-                    <input type="number" id="textSizeInput" value="12" style="width:50px;">
-                </div>
                 <div id="selectOptions" class="flex-row" style="margin-top: 5px; display: none;">
                     <button onclick="copySelection()" title="복사 (Ctrl+C)">📄 복사</button>
                     <button onclick="pasteSelection()" title="붙여넣기 (Ctrl+V)">📋 붙여넣기</button>
@@ -522,7 +517,7 @@
                 selectBox && stampSelection(), "bucket" === currentTool ? (saveHistoryState(), fillTool(t), mirrorMode && gridSize - 1 - t.x !== t.x && fillTool({
                     x: gridSize - 1 - t.x,
                     y: t.y
-                }), saveCurrentLayerToData()) : ["line", "rect", "circle", "triangle"].includes(currentTool) ? (saveHistoryState(), isDrawingShape = !0, shapeStartX = t.x, shapeStartY = t.y, tempImageData = getCtx().getImageData(0, 0, canvasWidth, canvasHeight)) : "text" === currentTool ? insertTextAt(t) : (saveHistoryState(), isDrawing = !0, drawPixelAt(t.x, t.y), lastX = t.x, lastY = t.y)
+                }), saveCurrentLayerToData()) : ["line", "rect", "circle", "triangle"].includes(currentTool) ? (saveHistoryState(), isDrawingShape = !0, shapeStartX = t.x, shapeStartY = t.y, tempImageData = getCtx().getImageData(0, 0, canvasWidth, canvasHeight)) : (saveHistoryState(), isDrawing = !0, drawPixelAt(t.x, t.y), lastX = t.x, lastY = t.y)
             }
 
             function handleMove(e) {
@@ -676,24 +671,6 @@
                     let c = 2 * l;
                     c > -o && (l -= o, e += i), c < r && (l += r, t += s)
                 }
-            }
-
-            function insertTextAt(e) {
-                const t = document.getElementById("textInputStr").value;
-                if (!t) return void alert("글자를 입력해주세요!");
-                const n = parseInt(document.getElementById("textSizeInput").value) || 12;
-                saveHistoryState();
-                const a = document.createElement("canvas");
-                a.width = gridSize, a.height = gridSize;
-                const r = a.getContext("2d");
-                r.imageSmoothingEnabled = !1, r.font = `${n}px sans-serif`, r.textBaseline = "top", r.fillStyle = "black", r.fillText(t, e.x, e.y);
-                const o = r.getImageData(0, 0, gridSize, gridSize).data,
-                    i = getCtx();
-                for (let s = 0; s < gridSize; s++)
-                    for (let l = 0; l < gridSize; l++) {
-                        o[4 * (s * gridSize + l) + 3] > 128 && (i.fillStyle = currentColor, i.fillRect(l * pixelSize, s * pixelSize, pixelSize, pixelSize))
-                    }
-                saveCurrentLayerToData()
             }
 
             function fillTool(e) {
@@ -953,8 +930,8 @@
                 const w = document.getElementById("mainCanvasWrapper");
                 w && (w.style.cursor = "hand" === e ? "grab" : "picker" === e ? "copy" : "crosshair");
                 document.getElementById("fillOption").style.display = ["rect", "circle", "triangle"].includes(e) ? "flex" : "none";
-                document.getElementById("mirrorOption").style.display = ["select", "hand", "picker", "text"].includes(e) ? "none" : "flex";
-                "select" === currentTool && "select" !== e && stampSelection(), currentTool = e, document.querySelectorAll(".tool-btn").forEach(e => e.classList.remove("active")), document.getElementById("btn-" + e).classList.add("active"), document.getElementById("textOptions").style.display = "text" === e ? "flex" : "none", document.getElementById("selectOptions").style.display = "select" === e ? "flex" : "none", document.getElementById("brushOptions").style.display = ["text", "bucket", "select", "picker", "hand"].includes(e) ? "none" : "flex"
+                document.getElementById("mirrorOption").style.display = ["select", "hand", "picker"].includes(e) ? "none" : "flex";
+                "select" === currentTool && "select" !== e && stampSelection(), currentTool = e, document.querySelectorAll(".tool-btn").forEach(e => e.classList.remove("active")), document.getElementById("btn-" + e).classList.add("active"), document.getElementById("selectOptions").style.display = "select" === e ? "flex" : "none", document.getElementById("brushOptions").style.display = ["bucket", "select", "picker", "hand"].includes(e) ? "none" : "flex"
             }
 
             function setColor(e) {
