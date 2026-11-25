@@ -111,6 +111,7 @@
         .zoom-controls button { min-width: 44px; font-size: 1rem; }
         .zoom-controls button.on { background: rgba(245, 158, 11, 0.25); box-shadow: inset 0 0 0 2px var(--tool-active); }
         #zoomDisp { min-width: 56px; text-align: center; font-weight: bold; }
+        #onionNote { display: none; font-size: 0.8rem; color: #93c5fd; text-align: center; }
         #zoomHint { display: none; font-size: 0.78rem; color: var(--warning-color); text-align: center; }
 
         .work-btn { background: var(--layer-bg); border: 1px solid var(--border-color); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -286,6 +287,7 @@
                 <button onclick="zoomReset()" title="원래 크기로">↺ 원래대로</button>
                 <button id="zoomHandBtn" onclick="setTool('hand')" title="확대한 화면을 손가락으로 끌어서 옮겨요">✋ 화면 이동</button>
             </div>
+            <div id="onionNote">👻 파랗게 비치는 건 앞 프레임 그림이에요 (어니언 스킨)</div>
             <div id="zoomHint">확대 중이에요. 다른 곳을 보려면 ✋ 화면 이동 도구로 끌어 보세요</div>
 
             <div class="frame-controls">
@@ -921,11 +923,19 @@
             }
 
             function drawOnionSkin() {
-                if (onionCtx.clearRect(0, 0, canvasWidth, canvasWidth), !document.getElementById("onionToggle").checked || 0 === currentFrameIndex) return;
+                const note = document.getElementById("onionNote");
+                if (onionCtx.clearRect(0, 0, canvasWidth, canvasWidth), note.style.display = "none", !document.getElementById("onionToggle").checked || 0 === currentFrameIndex) return;
                 frames[currentFrameIndex - 1].forEach(e => {
                     const t = document.createElement("canvas");
                     t.width = canvasWidth, t.height = canvasWidth, t.getContext("2d").putImageData(e, 0, 0), onionCtx.drawImage(t, 0, 0)
-                })
+                });
+                // 앞 프레임 그림은 파란빛으로 칠해 지금 그림과 헷갈리지 않게
+                onionCtx.save(), onionCtx.globalCompositeOperation = "source-atop", onionCtx.fillStyle = "#3b82f6", onionCtx.globalAlpha = 0.65, onionCtx.fillRect(0, 0, canvasWidth, canvasWidth), onionCtx.restore();
+                frames[currentFrameIndex - 1].some(e => {
+                    for (let i = 3; i < e.data.length; i += 4)
+                        if (e.data[i]) return !0;
+                    return !1
+                }) && (note.style.display = "block")
             }
 
             function startPreview() {
