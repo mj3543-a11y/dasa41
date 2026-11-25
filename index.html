@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4학년 1반 배움 전시관</title>
+<meta name="description" content="4학년 1반 친구들이 한 해 동안 만든 작품을 모았어요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="4학년 1반 배움 전시관">
+<meta property="og:description" content="4학년 1반 친구들이 한 해 동안 만든 작품을 모았어요.">
+<meta property="og:image" content="https://dasa41.pages.dev/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="theme-color" content="#f6f3ee">
+<link rel="stylesheet" href="font/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ee; --card:#ffffff; --ink:#1d1b19; --sub:#6f6a63; --mute:#a39d94; --line:#e5dfd5;
+  --acc:#c8553d; --acc-t:#f4e3dc; --grn:#2f5d50; --grn-t:#e2ebe6;
+  --serif:"Gowun Batang", "Nanum Myeongjo", serif;
+  --sans:"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif;
+  --r:14px; --sh:0 1px 2px rgba(29,27,25,.04), 0 8px 24px -14px rgba(29,27,25,.22);
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; -webkit-text-size-adjust:100%}
+body{margin:0; color:var(--ink); font:16px/1.7 var(--sans); letter-spacing:-.01em; word-break:keep-all; overflow-wrap:anywhere; background:var(--bg)}
+h1,h2,h3{font-family:var(--serif); font-weight:700; letter-spacing:-.02em}
+a{color:inherit}
+img{display:block; max-width:100%}
+button{font-family:inherit}
+.wrap{max-width:1160px; margin:0 auto; padding:0 20px}
+
+/* 맨 위 */
+.hero{padding:72px 0 44px}
+.meta{display:flex; align-items:center; gap:12px; font-size:13px; font-weight:600; letter-spacing:.08em; color:var(--acc)}
+.meta::after{content:""; flex:1; height:1px; background:var(--line)}
+.hero h1{font-size:clamp(46px, 10vw, 112px); line-height:1.02; margin:26px 0 22px}
+.hero h1 small{display:block; font-size:.36em; font-weight:400; color:var(--sub); margin-bottom:10px; letter-spacing:0}
+.hero .row{display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; border-top:1px solid var(--ink); padding-top:18px}
+.hero p{margin:0; color:var(--sub); max-width:28em}
+.stats{display:flex}
+.stats div{padding:0 22px; border-left:1px solid var(--line); text-align:right}
+.stats div:first-child{border-left:0}
+.stats b{display:block; font-family:var(--serif); font-size:34px; line-height:1.1; font-weight:700}
+.stats span{font-size:13px; color:var(--sub)}
+
+/* 선생님 뽑기 */
+.draws{display:flex; align-items:center; gap:10px 20px; flex-wrap:wrap; padding:14px 18px; background:var(--card); border:1px solid var(--line); border-radius:var(--r)}
+.draws h2{margin:0; font-family:var(--sans); font-size:15px; font-weight:700; letter-spacing:-.01em}
+.draws h2 small{font-weight:400; color:var(--sub); margin-left:8px}
+.dl{display:flex; gap:8px; flex-wrap:wrap; margin-left:auto}
+.dl a{display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-size:15px; font-weight:600; padding:7px 14px 7px 10px; border:1px solid var(--line); border-radius:99px; transition:all .15s}
+.dl a:hover{border-color:var(--ink); background:var(--ink); color:#fff}
+.dl a i{font-style:normal; font-size:16px}
+.dl a::after{content:"↗"; color:var(--mute); font-weight:400}
+.dl a:hover::after{color:#fff}
+
+/* 메뉴 */
+.nav{position:sticky; top:0; z-index:20; margin-top:30px; background:rgba(246,243,238,.9); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--line)}
+.nav .wrap{position:relative; display:flex; gap:26px; overflow-x:auto; scrollbar-width:none}
+.nav .wrap::-webkit-scrollbar{display:none}
+.nav a{flex:none; text-decoration:none; padding:14px 0 12px; font-size:15px; color:var(--sub); white-space:nowrap; border-bottom:2px solid transparent; transition:color .2s}
+.nav a i{font-style:normal; margin-right:6px}
+.nav a.on{color:var(--ink); border-bottom-color:var(--ink); font-weight:600}
+
+/* 칸 */
+section{padding:72px 0 0; scroll-margin-top:52px}
+.sh{display:grid; grid-template-columns:auto 1fr auto; align-items:end; gap:4px 18px; margin-bottom:26px; padding-bottom:16px; border-bottom:1px solid var(--line)}
+.sh .no{font-family:var(--serif); font-size:15px; color:var(--acc); font-weight:700; align-self:start; padding-top:8px}
+.sh h2{margin:0; font-size:clamp(26px, 4.4vw, 40px); line-height:1.15}
+.sh h2 .em{font-size:.82em; margin-right:.3em; font-family:system-ui, sans-serif}
+.sh .ct{font-size:13px; color:var(--sub); white-space:nowrap; padding-bottom:6px}
+.sh p{grid-column:2 / -1; margin:2px 0 0; color:var(--sub); font-size:15px}
+
+/* 친구 찾기 */
+.names{display:grid; grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); gap:10px}
+.names button{cursor:pointer; display:flex; align-items:center; gap:12px; padding:9px 12px 9px 9px; border-radius:var(--r); border:1px solid var(--line); background:var(--card); color:var(--ink); text-align:left; transition:all .15s}
+.names button:hover{border-color:var(--ink); transform:translateY(-1px)}
+.names button::after{content:"→"; margin-left:auto; color:var(--mute)}
+.av{flex:none; width:44px; height:44px; border-radius:50%; object-fit:cover; background:var(--acc-t)}
+.names b{font-size:16px; font-weight:700; display:block; line-height:1.3}
+.names small{display:block; font-size:12.5px; color:var(--sub)}
+
+/* 사진 */
+.masonry{columns:4 230px; column-gap:20px}
+.masonry > *{break-inside:avoid; margin-bottom:28px}
+.art .frame{background:var(--card); padding:10px; border-radius:4px; box-shadow:var(--sh)}
+.pic{cursor:zoom-in; background:#ece6dc; width:100%; height:auto; transition:opacity .2s}
+.pic:hover{opacity:.92}
+.cap{padding:12px 2px 0}
+.cap b{font-family:var(--serif); font-weight:700; font-size:17px; display:block; line-height:1.4}
+.who{display:inline-block; margin-top:2px; font-size:13px; color:var(--sub)}
+.who.link{cursor:pointer; text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:3px}
+.who.link:hover{color:var(--ink); text-decoration-color:var(--ink)}
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:24px 20px}
+.grid .pic{aspect-ratio:4/3; object-fit:cover; border-radius:4px}
+
+/* 게임 */
+.games{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px}
+.game{display:flex; flex-direction:column; gap:14px; text-decoration:none; padding:18px 18px 16px; border-radius:var(--r); background:var(--card); border:1px solid var(--line); transition:all .18s; min-height:132px}
+.game:hover{border-color:var(--ink); transform:translateY(-2px); box-shadow:var(--sh)}
+.game .gtop{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--mute); font-weight:600; letter-spacing:.04em}
+.game .gtop span:last-child{width:30px; height:30px; display:grid; place-items:center; border-radius:50%; border:1px solid var(--line); color:var(--ink); font-size:14px; transition:all .18s}
+.game:hover .gtop span:last-child{background:var(--acc); border-color:var(--acc); color:#fff}
+.game b{font-family:var(--serif); font-weight:700; font-size:20px; line-height:1.35}
+.game .who{margin-top:auto}
+
+/* 플레이리스트 */
+.albums{display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:28px 20px}
+.alb{cursor:pointer; text-align:left; color:inherit; border:0; padding:0; background:none}
+.alb .cv{position:relative; aspect-ratio:1; border-radius:6px; overflow:hidden; box-shadow:var(--sh); background:var(--card)}
+.alb img{width:100%; height:100%; object-fit:cover; transition:transform .4s}
+.alb:hover img{transform:scale(1.04)}
+.alb .noimg{display:grid; place-items:center; height:100%; color:var(--mute); font-size:13px}
+.alb .play{position:absolute; right:10px; bottom:10px; width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,.95); display:grid; place-items:center; font-size:14px; color:var(--ink); box-shadow:0 4px 14px rgba(0,0,0,.18); transition:all .2s}
+.alb:hover .play, .alb.on .play{background:var(--acc); color:#fff}
+.alb.on .cv{outline:2px solid var(--acc); outline-offset:3px}
+.alb b{display:block; font-family:var(--serif); font-weight:700; font-size:17px; line-height:1.35; margin-top:12px}
+.alb small{display:block; color:var(--sub); font-size:13px; margin-top:2px}
+.song{position:fixed; inset:0; z-index:55; background:rgba(29,27,25,.5); display:none; align-items:center; justify-content:center; padding:16px}
+.song.show{display:flex}
+.song .box{width:min(580px, 100%); max-height:calc(100vh - 32px); overflow-y:auto; background:var(--bg); border-radius:18px; padding:22px; box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+.song .hd{display:flex; gap:16px; align-items:center}
+.song .hd img{width:92px; height:92px; border-radius:6px; object-fit:cover; flex:none; box-shadow:var(--sh)}
+.song .hd h3{margin:0; font-size:24px; line-height:1.25}
+.song .hd p{margin:4px 0 0; color:var(--sub); font-size:14px}
+.song audio{width:100%; margin:18px 0 4px}
+.lyr{white-space:pre-line; font-family:var(--serif); font-size:16px; line-height:1.95; background:var(--card); border-radius:var(--r); padding:20px 22px; margin-top:12px; border:1px solid var(--line)}
+.mini-player{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:40; display:none; align-items:center; gap:10px; background:var(--ink); color:#fff; border-radius:99px; padding:6px 6px 6px 6px; box-shadow:0 14px 34px -12px rgba(0,0,0,.55); max-width:calc(100% - 32px)}
+.mini-player.show{display:flex}
+.mini-player img{width:38px; height:38px; border-radius:50%; object-fit:cover; flex:none}
+.mini-player span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:14px; cursor:pointer; padding-right:4px}
+.mini-player button{flex:none; display:grid; place-items:center; width:36px; height:36px; border-radius:50%; border:0; background:rgba(255,255,255,.14); color:#fff; cursor:pointer; font-size:13px}
+.mini-player button:first-of-type{background:#fff; color:var(--ink)}
+
+/* 좋은 사람 */
+.comic .frame{background:var(--card); border-radius:6px; overflow:hidden; box-shadow:var(--sh)}
+
+/* 의견 */
+.ops{columns:3 290px; column-gap:20px}
+.note{break-inside:avoid; margin-bottom:20px; background:var(--card); padding:24px 22px 18px; border-radius:var(--r); border:1px solid var(--line); position:relative}
+.note::before{content:"“"; display:block; font-family:var(--serif); font-size:46px; line-height:.6; color:var(--acc); margin-bottom:10px}
+.note p{margin:0 0 14px; white-space:pre-line; font-family:var(--serif); font-size:16px; line-height:1.85}
+.note .who{padding-top:12px; border-top:1px solid var(--line); display:block}
+
+/* 친구 창 */
+.sheet{position:fixed; inset:0; z-index:50; background:rgba(29,27,25,.5); display:none; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain}
+.sheet.show{display:block}
+.sheet .in{max-width:1040px; margin:28px auto 40px; background:var(--bg); border-radius:20px; padding:0 26px 34px; min-height:60vh; overflow:clip}
+.sheet .top{display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:2; margin:0 -26px; padding:16px 26px; background:rgba(246,243,238,.94); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+.sheet .top .av{width:52px; height:52px}
+.sheet .top h2{margin:0; font-size:28px; flex:1; line-height:1.15}
+.sheet .top h2 small{display:block; font-family:var(--sans); font-weight:400; font-size:13px; color:var(--sub); letter-spacing:0}
+.btn{cursor:pointer; border:1px solid var(--line); border-radius:99px; padding:8px 16px; background:var(--card); white-space:nowrap; color:var(--ink); font-size:14px}
+.btn:hover{border-color:var(--ink)}
+.sheet h3{font-size:20px; margin:34px 0 14px; display:flex; align-items:center; gap:10px}
+.sheet h3::after{content:""; flex:1; height:1px; background:var(--line)}
+.mini{display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:14px}
+.mini .pic{aspect-ratio:1; object-fit:cover; border-radius:6px}
+.song2{display:grid; grid-template-columns:minmax(0, 220px) 1fr; gap:20px; align-items:start}
+.song2 .lyr{margin-top:0}
+
+/* 크게 보기 */
+.lb{position:fixed; inset:0; z-index:60; background:rgba(18,16,14,.95); display:none; align-items:center; justify-content:center; flex-direction:column; padding:16px}
+.lb.show{display:flex}
+.lb img{max-width:100%; max-height:calc(100vh - 130px); border-radius:4px; object-fit:contain}
+.lb .lc{color:#fff; margin-top:14px; text-align:center; font-family:var(--serif); font-size:18px}
+.lb .btn{background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.2)}
+.lb .x{position:absolute; top:14px; right:14px}
+.lb .pv,.lb .nx{position:absolute; top:50%; transform:translateY(-50%); width:48px; height:48px; padding:0; font-size:22px}
+.lb .pv{left:12px} .lb .nx{right:12px}
+
+footer{margin-top:90px; padding:40px 0 100px; border-top:1px solid var(--line); color:var(--sub); font-size:14px}
+footer .wrap{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap}
+footer b{font-family:var(--serif); font-size:20px; color:var(--ink)}
+
+@media (max-width:720px){
+  .wrap{padding:0 16px}
+  .hero{padding:44px 0 30px}
+  .hero h1{margin:20px 0 18px}
+  .hero .row{flex-direction:column; align-items:stretch}
+  .stats{justify-content:space-between}
+  .stats div{padding:0; border:0; text-align:left; flex:1}
+  .stats div + div{padding-left:14px; border-left:1px solid var(--line)}
+  .stats b{font-size:28px}
+  .draws{padding:14px}
+  .dl{margin-left:0; width:100%; display:grid; grid-template-columns:repeat(3, 1fr); gap:6px}
+  .dl a{flex-direction:column; gap:2px; padding:9px 4px; border-radius:12px; font-size:13px; text-align:center; justify-content:center}
+  .dl a::after{display:none}
+  .dl a i{font-size:20px}
+  .nav .wrap{gap:20px}
+  section{padding-top:56px}
+  .sh{grid-template-columns:auto 1fr; margin-bottom:20px}
+  .sh .ct{grid-column:2; grid-row:3; padding:0}
+  .masonry{columns:2; column-gap:12px} .masonry > *{margin-bottom:18px}
+  .art .frame{padding:6px}
+  .cap b{font-size:15px}
+  .grid{grid-template-columns:1fr 1fr; gap:16px 12px}
+  .games{grid-template-columns:1fr 1fr; gap:10px}
+  .game{padding:14px 13px 13px; min-height:120px; gap:10px}
+  .game b{font-size:16.5px}
+  .albums{grid-template-columns:1fr 1fr; gap:22px 14px}
+  .alb b{font-size:15.5px}
+  .names{grid-template-columns:1fr 1fr; gap:8px}
+  .names button{padding:8px 10px 8px 8px; gap:10px}
+  .av{width:38px; height:38px}
+  .sheet .in{margin:0; border-radius:0; min-height:100vh; padding:0 16px 30px}
+  .sheet .top{margin:0 -16px; padding:12px 16px}
+  .song2{grid-template-columns:1fr}
+  .song .box{padding:18px}
+  .song .hd img{width:72px; height:72px}
+  .lb .pv,.lb .nx{top:auto; bottom:18px; transform:none}
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="meta">2026 교육과정 발표회</div>
+    <h1><small>4학년 1반</small>배움 전시관</h1>
+    <div class="row">
+      <p>친구들이 그리고, 쓰고, 만든 작품을 한곳에 모았어요. 그림을 누르면 크게 볼 수 있어요.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="draws">
+    <h2>우리 반 뽑기 체험하기<small>수업 시간에 쓰는 뽑기예요</small></h2>
+    <div class="dl" id="ftiles"></div>
+  </div>
+</div>
+
+<nav class="nav"><div class="wrap" id="nav"></div></nav>
+
+<main class="wrap" id="main"></main>
+
+<footer><div class="wrap"><b>고맙습니다</b><span>4학년 1반 친구들이 함께 만든 작품들</span></div></footer>
+
+<div class="sheet" id="sheet"><div class="in" id="sheetIn"></div></div>
+<div class="song" id="song"><div class="box" id="songBox"></div></div>
+<div class="mini-player" id="mp"><img id="mpImg" alt=""><span id="mpTxt" onclick="openSong(NOW)"></span><button id="mpBtn" onclick="togglePlay()" aria-label="재생/멈춤"></button><button onclick="stopSong()" aria-label="끄기">✕</button></div>
+<audio id="aud" preload="none"></audio>
+<div class="lb" id="lb">
+  <button class="btn x" onclick="lbClose()">✕ 닫기</button>
+  <button class="btn pv" onclick="lbGo(-1)" aria-label="앞 그림">‹</button>
+  <img id="lbImg" alt="">
+  <div class="lc" id="lbCap"></div>
+  <button class="btn nx" onclick="lbGo(1)" aria-label="다음 그림">›</button>
+</div>
+
+<script src="data.js"></script>
+<script src="playlist.js"></script>
+<script>
+const D = window.DATA, PL = (window.PLAYLIST || []).filter(x => x.cover || x.audio);
+const POKE = "https://pokestudy.pages.dev";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// 가사: 줄 사이 빈 줄은 없애고, 절 사이(빈 줄 여러 개)만 한 줄 띄워요
+const lyr = s => s.replace(/\r/g, "").trim().replace(/\n{3,}/g, "\u0000").replace(/\n\n/g, "\n").replace(/\u0000/g, "\n\n");
+const two = n => String(n).padStart(2, "0");
+const IC_PLAY = `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.8v10.4L12 7z" fill="currentColor"/></svg>`;
+const IC_PAUSE = `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8.5" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg>`;
+
+// 그림 크게 보기
+let LB = [], LI = 0;
+function pics(list){ return list.filter(x => x.img).map(x => ({ src: x.img.src, cap: [x.title, x.name || x.label].filter(Boolean).join(" · ") })); }
+function lbOpen(list, i){ LB = list; LI = i; lbShow(); document.getElementById("lb").classList.add("show"); }
+function lbShow(){ const p = LB[LI]; document.getElementById("lbImg").src = p.src; document.getElementById("lbCap").textContent = p.cap || ""; }
+function lbGo(d){ LI = (LI + d + LB.length) % LB.length; lbShow(); }
+function lbClose(){ document.getElementById("lb").classList.remove("show"); }
+document.getElementById("lb").addEventListener("click", e => { if (e.target.id === "lb") lbClose(); });
+addEventListener("keydown", e => {
+  if (document.getElementById("lb").classList.contains("show")) {
+    if (e.key === "Escape") lbClose(); if (e.key === "ArrowLeft") lbGo(-1); if (e.key === "ArrowRight") lbGo(1);
+  } else if (e.key === "Escape") { if (document.getElementById("song").classList.contains("show")) closeSong(); else closeSheet(); }
+});
+const REG = {}; let regN = 0;
+function reg(list){ const k = "g" + (regN++); REG[k] = list; return k; }
+const picTag = (x, key, i) => `<img class="pic" loading="lazy" src="${x.img.th}" width="${x.img.w}" height="${x.img.h}" alt="${esc(x.title || x.text || "")}" onclick="lbOpen(REG['${key}'],${i})">`;
+const who = x => x.name ? `<span class="who link" onclick="openKid('${x.name}')">${esc(x.name)}</span>` : (x.label ? `<span class="who">${esc(x.label)}</span>` : "");
+
+// 이름 옆 작은 그림: 그 친구의 사진전 작품(없으면 AR 섬)
+const AV = {}; for (const g of D.gallery) if (g.name && g.img && !AV[g.name]) AV[g.name] = g.img.th;
+for (const n of D.roster) if (!AV[n]) { const a = D.students[n].find(x => x.k === "ar"); if (a) AV[n] = a.img.th; }
+const av = n => AV[n] ? `<img class="av" src="${AV[n]}" alt="" loading="lazy">` : `<span class="av" style="display:grid;place-items:center;font-weight:700;color:var(--acc)">${n[1]}</span>`;
+
+const SEC = [
+  { id: "friends", em: "🧒", t: "친구별 보기" },
+  { id: "gallery", em: "🎨", t: "샤메크블루위 사진전" },
+  { id: "math", em: "🎮", t: "수학 퀴즈 게임" },
+  { id: "draw", em: "🎲", t: "뽑기 프로그램" },
+  { id: "playlist", em: "🎵", t: "여름방학 플레이리스트" },
+  { id: "good", em: "💛", t: "좋은 사람 도감" },
+  { id: "ar", em: "🏝️", t: "등고선 그리기" },
+  { id: "zoo", em: "🦁", t: "동물원, 어떻게 생각해요?" },
+];
+SEC.forEach((s, i) => s.no = two(i + 1));
+const S = Object.fromEntries(SEC.map(s => [s.id, s]));
+const allAR = [], allZoo = [];
+for (const n of D.roster) for (const x of D.students[n]) {
+  if (x.k === "ar") allAR.push({ name: n, img: x.img });
+  if (x.k === "text") allZoo.push({ name: n, text: x.text });
+}
+const head = (s, desc, n) => `<div class="sh"><span class="no">${s.no}</span><h2><span class="em">${s.em}</span>${s.t}</h2>${n ? `<span class="ct">작품 ${n}개</span>` : "<span></span>"}${desc ? `<p>${desc}</p>` : ""}</div>`;
+function games(list, kind){
+  return `<div class="games">` + list.map((x, i) => `<a class="game" href="${esc(x.url)}" target="_blank" rel="noopener">
+    <div class="gtop"><span>${kind} ${two(i + 1)}</span><span>↗</span></div>
+    <b>${esc(x.title || (x.name + "의 " + (kind === "뽑기" ? "뽑기" : "수학 게임")))}</b>
+    ${x.name ? `<span class="who">${esc(x.name)}</span>` : ""}</a>`).join("") + `</div>`;
+}
+
+// 선생님 뽑기
+document.getElementById("ftiles").innerHTML = [
+  ["/draw?src=partner", "🎁", "포켓몬 랜덤뽑기", "몬스터볼이 열리면 오늘의 주인공이 나와요"],
+  ["/roulette", "🎡", "포켓몬 룰렛", "포켓몬이 데굴데굴 굴러가요"],
+  ["/ladder?res=" + encodeURIComponent("통과*20,당첨*3"), "🪜", "포켓몬 사다리타기", "파트너 포켓몬이 사다리를 타요"],
+].map(([u, e, t, d]) => `<a href="${POKE}${u}" target="_blank" rel="noopener" title="${d}"><i>${e}</i>${t}</a>`).join("");
+
+// 노래
+const aud = document.getElementById("aud"); let NOW = -1;
+const songName = x => x.title || `${x.name}의 노래`;
+const mmss = d => `${Math.floor(d / 60)}:${two(d % 60)}`;
+function albums(list){
+  return `<div class="albums">` + list.map(x => { const i = PL.indexOf(x);
+    return `<button class="alb" id="alb${i}" onclick="openSong(${i})"><div class="cv">${x.cover ? `<img src="${x.cover}" alt="${esc(songName(x))} 앨범 표지" loading="lazy">` : `<span class="noimg">표지 없음</span>`}${x.audio ? `<span class="play">${IC_PLAY}</span>` : ""}</div>
+    <b>${esc(x.audio ? songName(x) : "앨범 표지")}</b><small>${esc(x.name)}${x.dur ? ` · ${mmss(x.dur)}` : ""}</small></button>`; }).join("") + `</div>`;
+}
+function openSong(i){
+  const x = PL[i]; if (!x) return;
+  if (x.audio && NOW !== i) { NOW = i; aud.src = x.audio; aud.play().catch(() => {}); }
+  document.getElementById("songBox").innerHTML = `<div class="hd">${x.cover ? `<img src="${x.cover}" alt="">` : ""}<div style="flex:1"><h3>${esc(x.audio ? songName(x) : "앨범 표지")}</h3><p>${esc(x.name)}</p></div><button class="btn" onclick="closeSong()">✕</button></div>
+    ${x.audio ? `<div id="audSlot"></div>` : ""}${x.lyrics ? `<div class="lyr">${esc(lyr(x.lyrics))}</div>` : ""}`;
+  if (x.audio) { aud.controls = true; document.getElementById("audSlot").appendChild(aud); }
+  document.getElementById("song").classList.add("show"); syncPlayer();
+}
+function closeSong(){ document.getElementById("song").classList.remove("show"); aud.controls = false; document.body.appendChild(aud); syncPlayer(); }
+function togglePlay(){ aud.paused ? aud.play() : aud.pause(); }
+function stopSong(){ aud.pause(); aud.removeAttribute("src"); aud.load(); NOW = -1; syncPlayer(); }
+function syncPlayer(){
+  const open = document.getElementById("song").classList.contains("show"), x = PL[NOW];
+  document.getElementById("mp").classList.toggle("show", !!x && !open);
+  if (x) { document.getElementById("mpImg").src = x.cover || ""; document.getElementById("mpTxt").textContent = `${songName(x)} · ${x.name}`; }
+  document.getElementById("mpBtn").innerHTML = aud.paused ? IC_PLAY : IC_PAUSE;
+  document.querySelectorAll(".alb").forEach(b => { const on = b.id === "alb" + NOW && !aud.paused, pl = b.querySelector(".play");
+    b.classList.toggle("on", on); if (pl) pl.innerHTML = on ? IC_PAUSE : IC_PLAY; });
+}
+["play", "pause", "ended"].forEach(ev => aud.addEventListener(ev, syncPlayer));
+document.getElementById("song").addEventListener("click", e => { if (e.target.id === "song") closeSong(); });
+
+let html = "";
+html += `<section id="friends">${head(S.friends, "이름을 누르면 그 친구의 작품만 모아서 보여 드려요.")}<div class="names">` +
+  D.roster.map(n => `<button onclick="openKid('${n}')">${av(n)}<span><b>${n}</b><small>작품 ${countOf(n)}개</small></span></button>`).join("") + `</div></section>`;
+{ const list = D.gallery.filter(x => x.img), key = reg(pics(list));
+  html += `<section id="gallery">${head(S.gallery, "종이에 그림을 그리고 오려서, 학교 곳곳의 풍경과 함께 사진으로 찍었어요.", list.length)}<div class="masonry">` +
+    list.map((x, i) => `<figure class="art" style="margin:0"><div class="frame">${picTag(x, key, i)}</div><figcaption class="cap">${x.title ? `<b>${esc(x.title)}</b>` : ""}${who(x)}</figcaption></figure>`).join("") + `</div></section>`; }
+html += `<section id="math">${head(S.math, "친구들이 직접 만든 수학 퀴즈 게임이에요. 눌러서 풀어 보세요.", D.math.length)}${games(D.math, "게임")}</section>`;
+html += `<section id="draw">${head(S.draw, "발표·청소 구역 정하기처럼 반에서 쓸 뽑기 프로그램을 만들었어요.", D.draw.length)}${games(D.draw, "뽑기")}</section>`;
+if (PL.length) html += `<section id="playlist">${head(S.playlist, "여름방학 이야기로 노랫말을 쓰고 앨범 표지를 그렸어요. 표지를 누르면 노래와 가사가 나와요.", PL.length)}${albums(PL)}</section>`;
+{ const list = D.good.filter(x => x.img).map(x => ({ ...x, title: x.text })), key = reg(pics(list));
+  html += `<section id="good">${head(S.good, "우리 주변의 좋은 사람을 찾아 만화로 그렸어요.", list.length)}<div class="masonry">` +
+    list.map((x, i) => `<figure class="comic" style="margin:0"><div class="frame">${picTag(x, key, i)}</div><figcaption class="cap">${x.text ? `<b>${esc(x.text)}</b>` : ""}${who(x)}</figcaption></figure>`).join("") + `</div></section>`; }
+{ const key = reg(pics(allAR));
+  html += `<section id="ar">${head(S.ar, "종이에 등고선을 그리고 LandscapAR 앱으로 비추어 입체 지형으로 만들었어요.", allAR.length)}<div class="grid">` +
+    allAR.map((x, i) => `<figure style="margin:0">${picTag(x, key, i)}<figcaption class="cap">${who(x)}</figcaption></figure>`).join("") + `</div></section>`; }
+html += `<section id="zoo">${head(S.zoo, "동물원이 있어야 할까요? 친구들이 저마다의 생각과 까닭을 썼어요.", allZoo.length)}<div class="ops">` +
+  allZoo.map(x => `<div class="note"><p>${esc(x.text)}</p>${who(x)}</div>`).join("") + `</div></section>`;
+document.getElementById("main").innerHTML = html;
+
+document.getElementById("nav").innerHTML = SEC.filter(s => document.getElementById(s.id)).map(s => `<a href="#${s.id}"><i>${s.em}</i>${s.t}</a>`).join("");
+const total = D.gallery.length + allAR.length + D.math.length + D.draw.length + PL.length + D.good.length + allZoo.length;
+document.getElementById("stats").innerHTML = `<div><b>${D.roster.length}</b><span>명의 친구</span></div><div><b>${SEC.length - 1}</b><span>가지 활동</span></div><div><b>${total}</b><span>개의 작품</span></div>`;
+
+// 친구별
+function worksOf(n){
+  const f = a => a.filter(x => x.name === n), st = D.students[n] || [];
+  return [
+    ["🎨 샤메크블루위 사진전", "pic", f(D.gallery)],
+    ["🎮 수학 퀴즈 게임", "game", f(D.math)],
+    ["🎲 뽑기 프로그램", "draw", f(D.draw)],
+    ["🎵 여름방학 플레이리스트", "song", PL.filter(x => x.name === n)],
+    ["💛 좋은 사람 도감", "pic", f(D.good).map(x => ({ ...x, title: x.text }))],
+    ["🏝️ 등고선 그리기", "pic", st.filter(x => x.k === "ar").map(x => ({ ...x, name: n }))],
+    ["🦁 동물원에 대한 내 생각", "text", st.filter(x => x.k === "text")],
+    ["📝 활동 사진", "pic", st.filter(x => x.k === "photo").map(x => ({ ...x, name: n }))],
+  ].filter(g => g[2].length);
+}
+function countOf(n){ return worksOf(n).reduce((a, g) => a + g[2].length, 0); }
+function openKid(n){
+  let h = `<div class="top">${av(n)}<h2>${n}<small>작품 ${countOf(n)}개</small></h2><button class="btn" onclick="closeSheet()">✕ 닫기</button></div>`;
+  for (const [t, kind, list] of worksOf(n)) {
+    h += `<h3>${t}</h3>`;
+    if (kind === "game" || kind === "draw") h += games(list, kind === "draw" ? "뽑기" : "게임");
+    else if (kind === "text") h += `<div class="ops">` + list.map(x => `<div class="note"><p>${esc(x.text)}</p></div>`).join("") + `</div>`;
+    else if (kind === "song") h += list.map(x => `<div class="song2"><div>${albums([x])}</div>${x.lyrics ? `<div class="lyr">${esc(lyr(x.lyrics))}</div>` : "<div></div>"}</div>`).join("");
+    else { const key = reg(pics(list)); h += `<div class="mini">` + list.map((x, i) => `<figure style="margin:0">${picTag(x, key, i)}${x.title ? `<figcaption class="cap"><b>${esc(x.title)}</b></figcaption>` : ""}</figure>`).join("") + `</div>`; }
+  }
+  document.getElementById("sheetIn").innerHTML = h;
+  const sh = document.getElementById("sheet"); sh.classList.add("show"); sh.scrollTop = 0;
+  document.body.style.overflow = "hidden";
+  history.replaceState(null, "", "#" + encodeURIComponent(n)); syncPlayer();
+}
+function closeSheet(){ document.getElementById("sheet").classList.remove("show"); document.body.style.overflow = ""; history.replaceState(null, "", location.pathname); }
+document.getElementById("sheet").addEventListener("click", e => { if (e.target.id === "sheet") closeSheet(); });
+{ const n = decodeURIComponent(location.hash.slice(1)); if (D.roster.includes(n)) openKid(n); }
+
+// 지금 보는 칸 메뉴 표시
+const links = [...document.querySelectorAll(".nav a")], nv = document.getElementById("nav");
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
+  const on = links.find(a => a.classList.contains("on"));
+  if (on) nv.scrollTo({ left: on.offsetLeft - (nv.clientWidth - on.offsetWidth) / 2, behavior: "smooth" });
+}), { rootMargin: "-45% 0px -50% 0px" });
+document.querySelectorAll("main section").forEach(s => io.observe(s));
+</script>
+</body>
+</html>
